@@ -1,27 +1,24 @@
-# ── Secrets & local config ──────────────────────────────────────────────
+@'
+# Environment / Secrets
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 
-# ── Python ────────────────────────────────────────────────────────────────
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.egg-info/
 .venv/
 venv/
 env/
-ENV/
-pip-log.txt
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-*.egg-info/
-dist/
-build/
 
-# ── Node / web ────────────────────────────────────────────────────────────
+# Node / Frontend
 node_modules/
 .next/
 out/
@@ -30,9 +27,19 @@ dist/
 .npm/
 .pnp.*
 
-# ── Model artifacts (weights are never committed) ─────────────────────────
-*.pt
+# Dataset / Large files
+data/raw/
+data/processed/
+*.zip
+*.tar.gz
+*.csv
+*.tsv
+*.parquet
+
+# ML Model Checkpoints / Artifacts
+model/checkpoints/
 *.pth
+*.pt
 *.onnx
 *.bin
 *.safetensors
@@ -42,20 +49,28 @@ runs/
 wandb/
 mlruns/
 
-# ── Data (large or sensitive datasets stay out of git) ────────────────────
-*.csv
-*.tsv
-*.parquet
-*.zip
-*.tar.gz
-data/raw/
-data/processed/
+# Generated Results
+results/
+*.png
 
-# ── OS & editors ──────────────────────────────────────────────────────────
-.DS_Store
-Thumbs.db
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
 .idea/
-.vscode/*
-!.vscode/extensions.json
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+'@ | Set-Content .gitignore
