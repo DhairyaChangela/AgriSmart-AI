@@ -136,17 +136,30 @@ export function AgriBot({ className }: AgriBotProps) {
   }, [open, closePanel, openPanel]);
 
   return (
-    <div className={clsx("fixed right-3 bottom-3 z-[300] sm:right-5 sm:bottom-5", className)}>
+    <div
+      className={clsx(
+        "fixed right-3 z-[300] sm:right-5",
+        "bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))]",
+        className
+      )}
+    >
       {showBubble && (
         <AgriBotBubble
           state="welcome"
           title={AGRIBOT_WELCOME_TITLE}
           message={AGRIBOT_WELCOME_MESSAGE}
           actions={[
-            { id: "open", label: "Show me the options", primary: true },
+            { id: "open", label: "Show options", primary: true },
             { id: "dismiss", label: "Got it" },
           ]}
-          onAction={handleBubbleAction}
+          onAction={(id) => {
+            if (id === "dismiss") {
+              setBubbleDismissed(true);
+              setShowBubble(false);
+              return;
+            }
+            handleBubbleAction(id);
+          }}
           onClose={() => {
             setBubbleDismissed(true);
             setShowBubble(false);

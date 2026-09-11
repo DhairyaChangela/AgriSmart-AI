@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header, LeafMark } from "./Header";
 import { MobileNav } from "./MobileNav";
 import { AgriBot } from "@/components/assistant/AgriBot";
+import { PointerAccent } from "@/components/ui/PointerAccent";
 
 interface AppShellProps {
   children: ReactNode;
@@ -87,6 +88,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </footer>
       <AgriBot />
+      <PointerAccent />
     </div>
   );
 }

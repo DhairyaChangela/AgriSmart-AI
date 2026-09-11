@@ -1,106 +1,35 @@
 "use client";
 
+import Link from "next/link";
 import { clsx } from "clsx";
-import { Button } from "@/components/ui/Button";
+import { getButtonClassName } from "@/lib/utils/buttonStyles";
 
 export interface ResultActionsProps {
-  onCheckAnother?: () => void;
-  onRetake?: () => void;
-  onViewExplanation?: () => void;
-  onContinueToGuidance?: () => void;
-  /** Continue button label — defaults to "Continue to guidance". */
-  continueLabel?: string;
-  /** Hide the tertiary "View explanation" link (e.g. on edge states). */
-  showExplanationAction?: boolean;
+  onRetry?: () => void;
   className?: string;
 }
 
-/**
- * Clearly differentiated result actions:
- * - Primary: continue to guidance (the forward path)
- * - Secondary: check another crop / retake photo
- * - Tertiary: quiet "view explanation" anchor
- *
- * Stacked full-width on mobile, inline on larger screens.
- */
-export function ResultActions({
-  onCheckAnother,
-  onRetake,
-  onViewExplanation,
-  onContinueToGuidance,
-  continueLabel = "Continue to guidance",
-  showExplanationAction = true,
-  className,
-}: ResultActionsProps) {
+export function ResultActions({ onRetry, className }: ResultActionsProps) {
   return (
-    <nav
-      aria-label="Result actions"
-      className={clsx("flex flex-col gap-3", className)}
-    >
-      {onContinueToGuidance && (
-        <Button
+    <div className={clsx("flex flex-col gap-3 sm:flex-row sm:flex-wrap", className)}>
+      <Link href="/check-crop" className={getButtonClassName({ size: "lg", fullWidth: true, className: "sm:w-auto" })}>
+        Retake photo
+      </Link>
+      {onRetry && (
+        <button
           type="button"
-          size="lg"
-          fullWidth
-          onClick={onContinueToGuidance}
-          icon={
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          }
-          iconPosition="right"
+          onClick={onRetry}
+          className={getButtonClassName({ variant: "outline", size: "lg", fullWidth: true, className: "sm:w-auto" })}
         >
-          {continueLabel}
-        </Button>
+          Retry analysis
+        </button>
       )}
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {onCheckAnother && (
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            fullWidth
-            onClick={onCheckAnother}
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            }
-          >
-            Check another crop
-          </Button>
-        )}
-        {onRetake && (
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            fullWidth
-            onClick={onRetake}
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8m0-5v5h5" />
-              </svg>
-            }
-          >
-            Retake photo
-          </Button>
-        )}
-      </div>
-
-      {showExplanationAction && onViewExplanation && (
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onViewExplanation}
-          >
-            View explanation
-          </Button>
-        </div>
-      )}
-    </nav>
+      <Link
+        href="/"
+        className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-neutral-600 underline-offset-4 hover:text-primary-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+      >
+        Back to home
+      </Link>
+    </div>
   );
 }

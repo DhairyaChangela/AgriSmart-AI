@@ -48,7 +48,7 @@ export const AGRIBOT_TOPICS: AgriBotTopic[] = [
     id: "check-crop",
     question: "How do I check my crop?",
     answer:
-      "Open Check Crop from the header. You capture a photo of the affected leaf or fruit, and AgriSmart AI analyzes the visible symptoms. You then get an understandable result with the next steps to act on.",
+      "Open Check Crop from the menu. Take or upload one leaf photo, review it on your phone, then continue to the analysis screen. In this prototype, analysis shows sample results until the live model is connected.",
   },
   {
     id: "good-photo",

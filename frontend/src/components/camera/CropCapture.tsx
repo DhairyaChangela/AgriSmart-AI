@@ -20,81 +20,52 @@ export interface CropCaptureProps {
 
 type CameraStatus = "idle" | "requesting" | "live" | "denied" | "unavailable";
 
-const STEPS: { key: CaptureStep; label: string; icon: React.ReactNode }[] = [
-  {
-    key: "choose",
-    label: "Choose",
-    icon: (
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    key: "camera",
-    label: "Capture",
-    icon: (
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    key: "review",
-    label: "Review",
-    icon: (
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-];
+const WORKFLOW = [
+  { id: "photo", label: "Photo" },
+  { id: "review", label: "Review" },
+  { id: "analysis", label: "Analysis" },
+] as const;
+
+function workflowIndex(step: CaptureStep): number {
+  if (step === "review") return 1;
+  if (step === "choose" || step === "camera" || step === "upload") return 0;
+  return 0;
+}
 
 function StepIndicator({ current }: { current: CaptureStep }) {
-  const currentIndex = STEPS.findIndex((s) => s.key === current);
+  const activeIndex = workflowIndex(current);
+
   return (
-    <nav aria-label="Capture progress" className="mx-auto mb-6 flex w-full max-w-sm items-center">
-      <ol className="flex w-full items-center justify-between" role="list">
-        {STEPS.map((step, i) => {
-          const isActive = step.key === current;
-          const isDone = i < currentIndex;
+    <nav aria-label="Capture progress" className="relative mb-5">
+      <ol className="grid grid-cols-3 gap-2" role="list">
+        {WORKFLOW.map((item, i) => {
+          const isActive = i === activeIndex;
+          const isDone = i < activeIndex;
           return (
-            <li key={step.key} className="flex flex-col items-center">
+            <li key={item.id} className="flex flex-col items-center text-center">
               <span
                 aria-current={isActive ? "step" : undefined}
                 className={clsx(
-                  "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors",
+                  "flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold transition-colors",
                   isActive
-                    ? "border-primary-600 bg-primary-600 text-white"
+                    ? "bg-primary-700 text-white shadow-sm"
                     : isDone
-                      ? "border-success-500 bg-success-500 text-white"
-                      : "border-neutral-300 bg-white text-neutral-400"
+                      ? "bg-primary-100 text-primary-800"
+                      : "bg-neutral-100 text-neutral-400"
                 )}
               >
-                {isDone ? (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  step.icon
-                )}
+                {isDone ? "✓" : i + 1}
               </span>
-              <span
-                className={clsx(
-                  "mt-1.5 text-xs font-medium",
-                  isActive ? "text-primary-700" : "text-neutral-500"
-                )}
-              >
-                {step.label}
+              <span className={clsx("mt-1.5 text-xs font-medium", isActive ? "text-primary-800" : "text-neutral-500")}>
+                {item.label}
               </span>
             </li>
           );
         })}
       </ol>
-      {/* Connecting lines */}
-      <div className="absolute top-[18px] left-12 right-12 flex items-center" aria-hidden="true">
-        <div className="h-px flex-1 bg-neutral-200" />
+      <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-5 flex -translate-y-1/2 gap-2" aria-hidden="true">
+        <div className={clsx("h-0.5 flex-1 rounded-full", activeIndex > 0 ? "bg-primary-400" : "bg-neutral-200")} />
+        <div className={clsx("h-0.5 flex-1 rounded-full", activeIndex > 1 ? "bg-primary-400" : "bg-neutral-200")} />
       </div>
     </nav>
   );
@@ -302,26 +273,10 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
       <StepIndicator current={step} />
 
       {step === "choose" && (
-        <div className="space-y-6">
-          <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary-700">
-              Step 1 of 3 · Add a photo
-            </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
-              Show us your crop
-            </h1>
-            <p className="mx-auto mt-2 max-w-md text-base text-neutral-600">
-              One photo. One clear answer. One clear next action.
-            </p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary-50 px-4 py-2 text-xs text-primary-700">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              No analysis yet — just a photo, kept on your phone
-            </div>
-          </div>
+        <div className="space-y-4">
+          <p className="text-sm font-medium text-neutral-800">How would you like to add a photo?</p>
 
-          <div className="grid gap-3 sm:grid-cols-1">
+          <div className="grid gap-3">
             <button
               type="button"
               onClick={goToCamera}
@@ -362,19 +317,15 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
             </button>
           </div>
 
-          <ImageGuidance compact />
+          <ImageGuidance variant="inline" />
+          <ImageGuidance variant="panel" className="mt-2" />
         </div>
       )}
 
       {step === "camera" && (
-        <div className="space-y-4">
-          <StepBackButton onClick={goToChoose} label="Back to choices" />
-          <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Take a photo</h1>
-            <p className="mt-1 text-sm text-neutral-600">
-              Center one leaf in the frame. These are photo tips — the app is not judging your camera view.
-            </p>
-          </div>
+        <div className="space-y-3">
+          <StepBackButton onClick={goToChoose} label="Other options" />
+          <ImageGuidance variant="inline" />
 
           <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-950">
             {cameraStatus === "live" || cameraStatus === "requesting" ? (
@@ -484,16 +435,6 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
             </div>
           )}
 
-          <div aria-label="Quick photo reminders" className="flex flex-wrap gap-2">
-            {["One leaf", "Show the spot", "Hold steady", "Even light"].map((tip) => (
-              <li key={tip} className="rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700">
-                {tip}
-              </li>
-            ))}
-          </div>
-
-          <ImageGuidance compact />
-
           <input
             ref={nativeCameraInputRef}
             type="file"
@@ -512,23 +453,9 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
       )}
 
       {step === "upload" && (
-        <div className="space-y-5">
-          <StepBackButton onClick={image ? () => setStep("review") : goToChoose} label={image ? "Back to preview" : "Back to choices"} />
-          <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary-700">
-              Step 2 of 3 · Upload a photo
-            </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">Upload a photo</h1>
-            <p className="mx-auto mt-2 max-w-md text-base text-neutral-600">
-              Choose one clear photo of the affected leaf. It stays on your phone.
-            </p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary-50 px-4 py-2 text-xs text-primary-700">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              No analysis yet — just a photo, kept on your phone
-            </div>
-          </div>
+        <div className="space-y-4">
+          <StepBackButton onClick={image ? () => setStep("review") : goToChoose} label={image ? "Back to preview" : "Other options"} />
+          <p className="text-sm text-neutral-600">Choose a photo from your device. It is not uploaded anywhere in this prototype.</p>
 
           <UploadDropzone onFileChosen={acceptFile} loading={loading} error={error} />
 
@@ -538,28 +465,16 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
             </div>
           )}
 
-          <ImageGuidance compact />
+          <ImageGuidance variant="panel" />
         </div>
       )}
 
       {step === "review" && image && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <StepBackButton onClick={goToChoose} label="Start over" />
-          <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary-700">
-              Step 3 of 3 · Review
-            </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">Check your photo</h1>
-            <p className="mx-auto mt-2 max-w-md text-base text-neutral-600">
-              Does the leaf look clear and bright? If not, replace it — a better photo helps later.
-            </p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-success-50 px-4 py-2 text-xs text-success-700">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Your photo is safe on your phone
-            </div>
-          </div>
+          <p className="text-sm text-neutral-600">
+            Check the leaf is in frame and readable. Replace if needed, then continue to analysis.
+          </p>
 
           <ImagePreview
             image={image}
@@ -587,16 +502,7 @@ export function CropCapture({ onContinue, className }: CropCaptureProps) {
             }}
           />
 
-          {continued && (
-            <div role="status" className="rounded-2xl border border-success-100 bg-success-50 px-4 py-4">
-              <p className="font-semibold text-success-700">Photo ready for the next step.</p>
-              <p className="mt-1 text-sm text-neutral-600">
-                Nothing has been diagnosed — this photo will be used when you continue.
-              </p>
-            </div>
-          )}
-
-          <ImageGuidance compact />
+          <ImageGuidance variant="panel" />
         </div>
       )}
 

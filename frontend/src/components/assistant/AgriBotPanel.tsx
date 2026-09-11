@@ -104,7 +104,7 @@ className={clsx(
                     key={topic.id}
                     type="button"
                     onClick={() => onPickTopic(topic)}
-                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-left transition-colors hover:border-primary-300 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
+                    className="group flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-left transition-colors hover:border-primary-300 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
                   >
                     <span className="text-body-sm font-medium text-neutral-800">{topic.question}</span>
                     <svg
@@ -167,14 +167,14 @@ className={clsx(
                       <button
                         type="button"
                         onClick={() => onFollowUp("helpful")}
-                        className="inline-flex items-center rounded-lg bg-primary-600 px-3 py-1.5 text-body-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
+                        className="inline-flex min-h-11 items-center rounded-lg bg-primary-600 px-3 py-2 text-body-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
                       >
                         That helps
                       </button>
                       <button
                         type="button"
                         onClick={() => onFollowUp("not-quite")}
-                        className="inline-flex items-center rounded-lg bg-neutral-100 px-3 py-1.5 text-body-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1"
+                        className="inline-flex min-h-11 items-center rounded-lg bg-neutral-100 px-3 py-2 text-body-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1"
                       >
                         Not quite
                       </button>

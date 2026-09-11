@@ -1,109 +1,62 @@
 "use client";
 
 import { clsx } from "clsx";
-import type { ConfidenceLevel } from "./ResultState";
-import {
-  CONFIDENCE_COPY,
-  formatConfidencePercent,
-} from "./ResultState";
+import type { ConfidenceLevel } from "./types";
 
-export interface ConfidenceIndicatorProps {
-  level: ConfidenceLevel;
-  /** Raw 0–1 model score. Shown only with a "model confidence" label. */
-  score?: number;
-  compact?: boolean;
-  className?: string;
-}
-
-const levelStyles: Record<ConfidenceLevel, { bar: string; chip: string; filled: number }> = {
+const COPY: Record<
+  ConfidenceLevel,
+  { label: string; detail: string; tone: "success" | "warning" | "neutral" }
+> = {
   high: {
-    bar: "bg-success-500",
-    chip: "bg-success-50 text-success-700 border border-success-100",
-    filled: 3,
+    label: "High confidence",
+    detail: "The visible pattern is fairly clear — still verify in the field before major action.",
+    tone: "success",
   },
   moderate: {
-    bar: "bg-warning-500",
-    chip: "bg-warning-50 text-warning-700 border border-warning-100",
-    filled: 2,
+    label: "Moderate confidence",
+    detail: "Possible match — treat as guidance and consider a clearer photo or expert review.",
+    tone: "warning",
   },
   low: {
-    bar: "bg-warning-500",
-    chip: "bg-warning-50 text-warning-700 border border-warning-100",
-    filled: 1,
+    label: "Low confidence",
+    detail: "Not enough detail for a reliable label — retake the photo or ask an expert.",
+    tone: "neutral",
   },
 };
 
-/**
- * Calm, farmer-friendly confidence display.
- *
- * - Words first ("High confidence"), never a giant percentage.
- * - An optional numeric score is always labelled "model confidence",
- *   never certainty.
- * - Three-segment meter keeps it glanceable without dashboard density.
- */
-export function ConfidenceIndicator({
-  level,
-  score,
-  compact = false,
-  className,
-}: ConfidenceIndicatorProps) {
-  const copy = CONFIDENCE_COPY[level];
-  const styles = levelStyles[level];
-  const hasScore = typeof score === "number" && Number.isFinite(score);
+const toneClass = {
+  success: "border-success-200 bg-success-50 text-success-900",
+  warning: "border-warning-200 bg-warning-50 text-warning-900",
+  neutral: "border-neutral-200 bg-neutral-50 text-neutral-800",
+};
+
+export interface ConfidenceIndicatorProps {
+  level: ConfidenceLevel;
+  className?: string;
+}
+
+export function ConfidenceIndicator({ level, className }: ConfidenceIndicatorProps) {
+  const copy = COPY[level];
+  const bars = level === "high" ? 3 : level === "moderate" ? 2 : 1;
 
   return (
-    <div
-      className={clsx("flex items-start gap-3", className)}
-      role="meter"
-      aria-label={`${copy.label}${hasScore ? `, model confidence ${formatConfidencePercent(score as number)} percent` : ""}`}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={hasScore ? Math.round((score as number) * 100) : undefined}
-      aria-valuetext={copy.label}
-    >
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={clsx(
-              "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-semibold",
-              styles.chip
-            )}
-          >
-            {copy.label}
-          </span>
-          {hasScore && !compact && (
-            <span className="text-sm text-neutral-500">
-              Model confidence: {formatConfidencePercent(score as number)}%
-            </span>
-          )}
-        </div>
-
-        <div
-          className="mt-2 flex items-center gap-1.5"
-          aria-hidden="true"
-        >
-          {[0, 1, 2].map((i) => (
+    <div className={clsx("rounded-xl border px-4 py-3", toneClass[copy.tone], className)} role="status">
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm font-semibold">{copy.label}</p>
+        <div className="flex items-end gap-1" aria-hidden="true">
+          {[1, 2, 3].map((i) => (
             <span
               key={i}
               className={clsx(
-                "h-1.5 w-10 rounded-full",
-                i < styles.filled ? styles.bar : "bg-neutral-200"
+                "w-2 rounded-sm",
+                i <= bars ? "bg-primary-600" : "bg-neutral-300/80",
+                i === 1 ? "h-2" : i === 2 ? "h-3" : "h-4"
               )}
             />
           ))}
         </div>
-
-        {!compact && (
-          <p className="mt-1.5 text-sm leading-snug text-neutral-600">
-            {copy.description}{" "}
-            {hasScore && (
-              <span className="text-neutral-500">
-                This number shows how sure the model is — not a guarantee.
-              </span>
-            )}
-          </p>
-        )}
       </div>
+      <p className="mt-1.5 text-sm leading-relaxed opacity-90">{copy.detail}</p>
     </div>
   );
 }

@@ -72,7 +72,7 @@ export function AgriBotBubble({
                 type="button"
                 onClick={() => onAction(action.id)}
                 className={clsx(
-                  "inline-flex items-center rounded-lg px-3 py-1.5 text-body-sm font-medium transition-colors",
+                  "inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-body-sm font-medium transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1",
                   action.primary
                     ? "bg-primary-600 text-white hover:bg-primary-700"
