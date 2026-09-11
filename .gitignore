@@ -1,0 +1,61 @@
+# ── Secrets & local config ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+pip-log.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ── Node / web ────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.npm/
+.pnp.*
+
+# ── Model artifacts (weights are never committed) ─────────────────────────
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+*.ckpt
+checkpoints/
+runs/
+wandb/
+mlruns/
+
+# ── Data (large or sensitive datasets stay out of git) ────────────────────
+*.csv
+*.tsv
+*.parquet
+*.zip
+*.tar.gz
+data/raw/
+data/processed/
+
+# ── OS & editors ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
