@@ -2,6 +2,7 @@
 
 import { clsx } from "clsx";
 import { Button } from "@/components/ui/Button";
+import { useEntered } from "@/components/assistant/useEntered";
 import type { AnalysisStatus } from "./ResultState";
 
 export interface AnalysisStateProps {
@@ -62,6 +63,7 @@ export function AnalysisState({
   onCancel,
   className,
 }: AnalysisStateProps) {
+  const entered = useEntered();
   if (status === "failed") {
     return (
       <section
@@ -224,16 +226,18 @@ export function AnalysisState({
       </div>
 
       {/* Local keyframes so no global CSS changes are needed. */}
-      <style>{`
-        @keyframes analysis-slide {
-          0% {
-            transform: translateX(-100%);
+      {entered && (
+        <style>{`
+          @keyframes analysis-slide {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(300%);
+            }
           }
-          100% {
-            transform: translateX(300%);
-          }
-        }
-      `}</style>
+        `}</style>
+      )}
     </section>
   );
 }

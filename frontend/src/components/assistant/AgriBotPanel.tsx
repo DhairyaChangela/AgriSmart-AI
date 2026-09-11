@@ -43,11 +43,11 @@ function CloseButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
       onClick={onClick}
       aria-label="Close AgriBot assistant"
     >
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
@@ -68,13 +68,12 @@ export const AgriBotPanel = forwardRef<HTMLDivElement, AgriBotPanelProps>(
         aria-modal="false"
         aria-label="AgriBot assistant"
         aria-busy={isBusy}
-        className={clsx(
+className={clsx(
           "absolute right-0 bottom-24 flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden",
           "rounded-2xl bg-white border border-neutral-200 shadow-2xl",
-          "transition-all duration-300 ease-out pointer-events-none",
+          "transition-all duration-300 ease-out",
           "max-h-[min(70vh,32rem)]",
-          entered ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-3 scale-95",
-          entered && "pointer-events-auto",
+          entered ? "opacity-100 translate-y-0 scale-100 pointer-events-auto" : "opacity-0 translate-y-3 scale-95 pointer-events-none",
           className
         )}
         {...props}

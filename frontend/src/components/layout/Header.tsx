@@ -96,19 +96,19 @@ export function Header({ onMenuClick, isMenuOpen = false }: HeaderProps) {
                     ? pathname === "/check-crop" || pathname.startsWith("/check-crop/")
                     : false;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={clsx(
-                    "px-3 py-2 text-body-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
-                    isActive
-                      ? "text-primary-800 bg-primary-50"
-                      : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
-                  )}
-                >
-                  {item.label}
-                </Link>
+<Link
+                   key={item.href}
+                   href={item.href}
+                   aria-current={isActive ? "page" : undefined}
+                   className={clsx(
+                     "min-h-11 inline-flex items-center px-3 py-2 text-body-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
+                     isActive
+                       ? "text-primary-800 bg-primary-50"
+                       : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
+                   )}
+                 >
+                   {item.label}
+                 </Link>
               );
             })}
           </nav>

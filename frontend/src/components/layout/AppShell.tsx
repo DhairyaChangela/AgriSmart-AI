@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Header, LeafMark } from "./Header";
 import { MobileNav } from "./MobileNav";
+import { AgriBot } from "@/components/assistant/AgriBot";
 
 interface AppShellProps {
   children: ReactNode;
@@ -85,6 +86,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
       </footer>
+      <AgriBot />
     </div>
   );
 }

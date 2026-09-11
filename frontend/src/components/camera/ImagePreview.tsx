@@ -45,7 +45,7 @@ export function ImagePreview({
         />
         {loading && (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 backdrop-blur-sm"
             role="status"
             aria-label="Reading your photo"
           >
@@ -58,6 +58,7 @@ export function ImagePreview({
               />
             </svg>
             <p className="text-sm font-medium text-neutral-700">Reading your photo…</p>
+            <span className="sr-only">Preparing your photo preview</span>
           </div>
         )}
       </div>

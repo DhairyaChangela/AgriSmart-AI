@@ -7,7 +7,6 @@ const buttonStyles = {
     rounded-xl focus-visible:outline-none focus-visible:ring-2
     focus-visible:ring-primary-500 focus-visible:ring-offset-2
     disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
-    active:scale-[0.98]
   `,
   variants: {
     primary: `
@@ -39,9 +38,9 @@ const buttonStyles = {
     `,
   },
   sizes: {
-    sm: `
-      h-9 px-3 text-sm gap-1.5
-    `,
+sm: `
+       h-11 px-3.5 text-sm gap-1.5
+     `,
     md: `
       h-11 px-4 text-base gap-2
     `,

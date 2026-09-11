@@ -72,22 +72,6 @@ export function AgriBot({ className }: AgriBotProps) {
         setOpen(false);
         return;
       }
-      if (event.key !== "Tab") return;
-      const root = panelRef.current;
-      if (!root) return;
-      const focusables = root.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusables.length === 0) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -152,7 +136,7 @@ export function AgriBot({ className }: AgriBotProps) {
   }, [open, closePanel, openPanel]);
 
   return (
-    <div className={clsx("fixed right-3 bottom-3 z-fixed sm:right-5 sm:bottom-5", className)}>
+    <div className={clsx("fixed right-3 bottom-3 z-[300] sm:right-5 sm:bottom-5", className)}>
       {showBubble && (
         <AgriBotBubble
           state="welcome"
@@ -194,8 +178,8 @@ export function AgriBot({ className }: AgriBotProps) {
           "relative flex h-14 w-14 items-center justify-center rounded-full",
           "border border-neutral-200 bg-white shadow-lg",
           "transition-all duration-200 ease-out",
-          "hover:border-primary-200 hover:shadow-primary hover:scale-[1.03]",
-          "active:scale-[0.97]",
+          "hover:border-primary-200 hover:shadow-primary",
+          "active:bg-neutral-50",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
         )}
       >

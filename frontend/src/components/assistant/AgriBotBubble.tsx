@@ -37,9 +37,8 @@ export function AgriBotBubble({
     <div
       className={clsx(
         "absolute right-0 bottom-full mb-3 w-[min(20rem,calc(100vw-2.5rem))]",
-        "transition-all duration-300 ease-out pointer-events-none",
-        shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
-        shown && "pointer-events-auto"
+        "transition-all duration-300 ease-out",
+        shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
       )}
       aria-live="polite"
       aria-atomic="true"
@@ -52,7 +51,7 @@ export function AgriBotBubble({
               <p className="text-body-sm font-semibold text-neutral-900">{title}</p>
               <button
                 type="button"
-                className="shrink-0 flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
+                className="shrink-0 flex h-11 w-11 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1"
                 onClick={onClose}
                 aria-label="Dismiss message"
               >

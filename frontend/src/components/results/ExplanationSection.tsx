@@ -88,7 +88,7 @@ export function ExplanationSection({
         </button>
 
         {open && (
-          <div id={panelId} role="region" aria-labelledby={buttonId} className="mt-3">
+          <div id={panelId} role="region" aria-labelledby={buttonId} className="mt-3 animate-fade-in">
             {observedSigns.length > 0 && (
               <ul role="list" className="space-y-2">
                 {observedSigns.map((sign) => (
