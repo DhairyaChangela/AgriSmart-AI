@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI
+﻿from app.backend.api.weather import router as weather_router
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.backend.api.predict import router as predict_router
@@ -11,6 +12,8 @@ app = FastAPI(
     description="AI-powered crop disease detection and agriculture advisory API",
     version="1.0.0",
 )
+
+app.include_router(weather_router)
 
 
 @app.on_event("startup")
