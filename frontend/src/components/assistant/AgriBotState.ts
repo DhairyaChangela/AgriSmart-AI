@@ -72,8 +72,8 @@ export const AGRIBOT_TOPICS: AgriBotTopic[] = [
     id: "diagnosis-source",
     question: "Where does the diagnosis come from?",
     answer:
-      "The diagnosis engine that reads real crop photos is a separate feature still in development. Right now AgriBot answers from built-in help content, so treat this as a tour rather than a live AI.",
-    note: "This is sample guide content. The live crop analysis model is not connected yet.",
+      "The diagnosis comes from the live AgriSmart model. AgriBot itself answers from built-in help content, so treat my answers as a guide rather than a second machine diagnosis.",
+    note: "AgriBot's guide content is built-in. The crop diagnosis itself comes from the live model.",
   },
 ];
 

@@ -47,7 +47,8 @@ export function AppShell({ children }: AppShellProps) {
                 Photo-first crop health guidance — built for the field, written in plain language.
               </p>
               <p className="text-body-sm text-neutral-500 max-w-xs">
-                The crop check, analysis, and next steps run on sample data while the diagnosis service is in prototype.
+                The diagnosis runs through the live AgriSmart model. Next steps
+                are general guidance — confirm with a local expert before treating anything.
               </p>
             </div>
             <nav aria-label="Product">

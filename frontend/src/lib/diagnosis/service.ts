@@ -5,8 +5,7 @@ import type { AnalysisOutcome, AnalysisRequest, PhotoCheck } from "./types";
  * Provider contract for the diagnosis journey.
  *
  * Implementations:
- * - `mockDiagnosisService` (default, local, simulated)
- * - `fastApiDiagnosisService` (future — same shape, HTTP-backed)
+ * - `realDiagnosisService` (default — FastAPI `POST /predict`)
  *
  * The app layer only ever depends on this interface.
  */

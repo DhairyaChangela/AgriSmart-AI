@@ -100,7 +100,7 @@ export function QualityCheckStage({
                 This only takes a moment — your photo stays on your device.
               </p>
               <p className="mt-1 text-xs text-neutral-500">
-                Sample check for this prototype.
+                Checking the photo format locally before analysis.
               </p>
             </div>
           ) : (
@@ -165,8 +165,8 @@ export function QualityCheckStage({
 
       {!checking && (
         <div className="mt-4 rounded-xl bg-neutral-100 px-4 py-2.5 text-xs leading-relaxed text-neutral-500">
-          This photo check is a prototype step. A live model is not connected
-          yet — the sample verdicts help validate the flow.
+          This photo check runs on your device before analysis. The diagnosis
+          itself comes from the live AgriSmart model.
         </div>
       )}
 

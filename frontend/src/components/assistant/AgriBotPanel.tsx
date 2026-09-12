@@ -230,7 +230,7 @@ className={clsx(
 
         <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2.5">
           <p className="text-xs text-neutral-500" role="note">
-            Sample guide content. The live crop diagnosis model is not connected yet.
+            AgriBot answers from built-in guide content. Crop diagnosis comes from the live AgriSmart model.
           </p>
         </div>
       </div>

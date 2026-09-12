@@ -56,9 +56,9 @@ function copyForResult(outcome: Extract<Stage, { name: "result" }>["outcome"]) {
  *   capture → quality check → analysis → result (success, low confidence,
  *   or a clearly-labelled edge) → retry/recovery at every branch.
  *
- * The provider is the DiagnosisService interface; today it is a local mock.
- * The UI never imports mock details, so a FastAPI implementation can replace
- * the provider without touching a single screen.
+ * The provider is the DiagnosisService interface; today it is the live
+ * AgriSmart API. The journey never imports implementation details, so the
+ * provider can change without touching a single screen.
  */
 export function DiagnosisJourney() {
   const [stage, setStage] = useState<Stage>({ name: "capture" });
@@ -69,6 +69,7 @@ export function DiagnosisJourney() {
   const [analysisPhase, setAnalysisPhase] = useState<Exclude<AnalysisStatus, "failed">>("preparing");
 
   const serviceRef = useRef(getDiagnosisService());
+  const [serviceIsMock] = useState(() => getDiagnosisService().id === "mock");
   const imageRef = useRef<SelectedImage | null>(null);
   const qualityCheckIdRef = useRef(0);
   const analysisIdRef = useRef(0);
@@ -298,7 +299,7 @@ export function DiagnosisJourney() {
       {stage.name === "result" && stage.outcome.kind === "result" && (
         <DiagnosisResult
           result={stage.outcome.result}
-          isPrototype
+          isPrototype={serviceIsMock}
           defaultExplanationOpen={false}
           onCheckAnother={restartCapture}
           onRetake={restartCapture}

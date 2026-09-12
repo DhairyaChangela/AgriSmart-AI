@@ -1,7 +1,7 @@
 export {
-  mockDiagnosisService,
+  realDiagnosisService,
   getDiagnosisService,
-} from "./mockDiagnosisService";
+} from "./realDiagnosisService";
 export type { DiagnosisService } from "./service";
 export { DiagnosisServiceError } from "./service";
 export type {

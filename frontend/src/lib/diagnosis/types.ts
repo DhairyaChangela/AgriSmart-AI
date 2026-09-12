@@ -6,9 +6,8 @@ import type { ImageQualityKind, SelectedImage } from "@/components/camera";
  * Diagnosis service contract — the single boundary between the journey UI
  * and whatever provides photo validation + analysis.
  *
- * Today: implemented by `mockDiagnosisService`.
- * Later: replaced 1:1 by a FastAPI-backed implementation with the same
- * interface. The UI never imports mock details — swap the provider and the
+ * Implemented today by `realDiagnosisService` (FastAPI `POST /predict`).
+ * The UI never imports implementation details — swap the provider and the
  * journey upgrades without touching a single screen.
  *
  * UI-ONLY promises kept by every implementation:
@@ -36,4 +35,4 @@ export interface AnalysisRequest {
 }
 
 export const ANALYSIS_SERVICE_NOTE =
-  "Prototype analysis — sample data. The live crop-diagnosis model is not connected yet.";
+  "Analysis runs through the live AgriSmart crop-disease model.";
