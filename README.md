@@ -128,24 +128,35 @@ Technical ML details never leak into the farmer-facing experience.
 
 ## 📸 Capture the Right Photo
 
-A good photo is the whole game: clear, close, and well-lit leaves let the model work on the details that matter. Match the pattern in the reference below — framing, distance, light — and the analysis starts with its best chance.
-
 <div align="center">
 
-<p align="center">
-  <img
-    src="docs/assets/ins.png"
-    alt="AgriSmart AI capture guidance"
-    width="650"
-  />
-</p>
+<table>
+<tr>
+<td width="55%" valign="middle">
 
-</div>
+### How to take a good leaf photo
+
+A good photo is the whole game: clear, close, and well-lit leaves let the model work on the details that matter.
 
 - **Get close** — fill the frame with the leaf; one clear leaf beats a wide shot.
 - **Go for even light** — daylight or soft shade; avoid harsh glare and heavy shadows.
 - **Keep it focused** — steady hands, a still leaf, and the affected part in crisp detail.
 - **Simplify the background** — plain, low-contrast surroundings keep the leaf the main subject.
+
+</td>
+<td width="45%" align="center" valign="middle">
+
+<img
+  src="docs/assets/ins.png"
+  alt="How to take a good leaf photo"
+  width="480"
+/>
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
