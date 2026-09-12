@@ -5,6 +5,8 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
+from torch.utils.data import DataLoader
+
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -13,7 +15,13 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay,
 )
 
-from model.dataset import create_dataloaders
+from model.dataset import (
+    build_samples,
+    validate_images,
+    create_train_val_split,
+    PlantDiseaseDataset,
+)
+from model.preprocessing import get_val_transform
 from model.architectures.classifier import create_model
 
 
@@ -45,8 +53,28 @@ def main():
 
     print(f"Classes: {len(classes)}")
 
-    # Load validation dataset
-    _, val_loader = create_dataloaders(batch_size=BATCH_SIZE)
+    # Recreate the same reproducible validation split used during training
+    samples, _ = build_samples()
+    samples = validate_images(samples)
+
+    _, val_samples = create_train_val_split(
+        samples,
+        validation_ratio=0.20,
+        random_seed=42,
+    )
+
+    # Create validation dataset and loader
+    val_dataset = PlantDiseaseDataset(
+        val_samples,
+        transform=get_val_transform(),
+    )
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=0,
+    )
 
     # Load model
     model = create_model(
@@ -72,8 +100,8 @@ def main():
     with torch.no_grad():
         for images, targets in val_loader:
             images = images.to(device)
-            outputs = model(images)
 
+            outputs = model(images)
             predictions = torch.argmax(outputs, dim=1)
 
             all_predictions.extend(predictions.cpu().numpy())
@@ -82,8 +110,11 @@ def main():
     all_predictions = np.array(all_predictions)
     all_targets = np.array(all_targets)
 
-    # Metrics
-    accuracy = accuracy_score(all_targets, all_predictions)
+    # Overall metrics
+    accuracy = accuracy_score(
+        all_targets,
+        all_predictions,
+    )
 
     macro_f1 = f1_score(
         all_targets,
@@ -110,27 +141,37 @@ def main():
     print("\n" + "=" * 60)
     print("PER-CLASS METRICS")
     print("=" * 60)
+
     print(report)
 
     # Create results directory
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    RESULTS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     # Save classification report
     report_path = RESULTS_DIR / "classification_report.txt"
 
-    with open(report_path, "w", encoding="utf-8") as f:
+    with open(
+        report_path,
+        "w",
+        encoding="utf-8",
+    ) as f:
         f.write("AgriSmart AI - Classification Report\n\n")
         f.write(f"Accuracy: {accuracy:.4f}\n")
         f.write(f"Macro-F1: {macro_f1:.4f}\n\n")
         f.write(report)
 
-    # Confusion matrix
+    # Create confusion matrix
     cm = confusion_matrix(
         all_targets,
         all_predictions,
     )
 
-    fig, ax = plt.subplots(figsize=(20, 20))
+    fig, ax = plt.subplots(
+        figsize=(20, 20)
+    )
 
     disp = ConfusionMatrixDisplay(
         confusion_matrix=cm,
@@ -143,11 +184,19 @@ def main():
         colorbar=False,
     )
 
-    plt.title("AgriSmart AI - Confusion Matrix")
+    plt.title(
+        "AgriSmart AI - Confusion Matrix"
+    )
+
     plt.tight_layout()
 
     confusion_path = RESULTS_DIR / "confusion_matrix.png"
-    plt.savefig(confusion_path, dpi=200)
+
+    plt.savefig(
+        confusion_path,
+        dpi=200,
+    )
+
     plt.close()
 
     print("\nResults saved:")
