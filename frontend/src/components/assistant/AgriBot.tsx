@@ -12,6 +12,11 @@ import {
   type AgriBotState,
   type AgriBotTopic,
 } from "./AgriBotState";
+import {
+  subscribeAgriBotContext,
+  getAgriBotContext,
+  type AgriBotContextMessage,
+} from "@/lib/assistant/agribotContext";
 
 interface AgriBotProps {
   className?: string;
@@ -23,6 +28,11 @@ export function AgriBot({ className }: AgriBotProps) {
   const [activeTopic, setActiveTopic] = useState<AgriBotTopic | null>(null);
   const [showBubble, setShowBubble] = useState(false);
   const [bubbleDismissed, setBubbleDismissed] = useState(false);
+  const [contextMsg, setContextMsg] = useState<AgriBotContextMessage | null>(() =>
+    getAgriBotContext()
+  );
+  // Which contextual bubble was dismissed. A fresh id re-shows automatically.
+  const [dismissedContextId, setDismissedContextId] = useState<string | null>(null);
 
   const launcherRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -40,19 +50,33 @@ export function AgriBot({ className }: AgriBotProps) {
     hasOpenedRef.current = true;
     setBubbleDismissed(true);
     setShowBubble(false);
+    if (contextMsg) setDismissedContextId(contextMsg.id);
     setOpen(true);
-  }, []);
+  }, [contextMsg]);
 
   const closePanel = useCallback(() => {
     setOpen(false);
   }, []);
 
+  const handleContextChange = useCallback((msg: AgriBotContextMessage | null) => {
+    setContextMsg(msg);
+    // A cleared store (journey finished) also un-dismisses the last bubble,
+    // so a brand-new journey can reintroduce its tip cleanly.
+    if (!msg) setDismissedContextId(null);
+  }, []);
+
+  useEffect(() => subscribeAgriBotContext(handleContextChange), [handleContextChange]);
+
+  // Derived, not state: contextual bubbles appear immediately (no 1.4s
+  // welcome delay) and a fresh id re-shows a previously dismissed bubble.
+  const showContextBubble = contextMsg !== null && dismissedContextId !== contextMsg.id;
+
   useEffect(() => {
-    if (open || bubbleDismissed || hasOpenedRef.current) return;
+    if (open || bubbleDismissed || hasOpenedRef.current || contextMsg) return;
     const id = window.setTimeout(() => setShowBubble(true), 1400);
     timersRef.current.push(id);
     return () => clearTimer(id);
-  }, [open, bubbleDismissed, clearTimer]);
+  }, [open, bubbleDismissed, clearTimer, contextMsg]);
 
   useEffect(() => {
     if (open) {
@@ -120,11 +144,12 @@ export function AgriBot({ className }: AgriBotProps) {
     (id: string) => {
       setBubbleDismissed(true);
       setShowBubble(false);
+      if (contextMsg) setDismissedContextId(contextMsg.id);
       if (id === "open") {
         openPanel();
       }
     },
-    [openPanel]
+    [contextMsg, openPanel]
   );
 
   const handleToggle = useCallback(() => {
@@ -136,34 +161,38 @@ export function AgriBot({ className }: AgriBotProps) {
   }, [open, closePanel, openPanel]);
 
   return (
-    <div
-      className={clsx(
-        "fixed right-3 z-[300] sm:right-5",
-        "bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))]",
-        className
-      )}
-    >
-      {showBubble && (
+    <div className={clsx("fixed right-3 bottom-3 z-[300] sm:right-5 sm:bottom-5", className)}>
+      {showBubble && !contextMsg && (
         <AgriBotBubble
           state="welcome"
           title={AGRIBOT_WELCOME_TITLE}
           message={AGRIBOT_WELCOME_MESSAGE}
           actions={[
-            { id: "open", label: "Show options", primary: true },
+            { id: "open", label: "Show me the options", primary: true },
             { id: "dismiss", label: "Got it" },
           ]}
-          onAction={(id) => {
-            if (id === "dismiss") {
-              setBubbleDismissed(true);
-              setShowBubble(false);
-              return;
-            }
-            handleBubbleAction(id);
-          }}
+          onAction={handleBubbleAction}
           onClose={() => {
             setBubbleDismissed(true);
             setShowBubble(false);
           }}
+        />
+      )}
+
+      {showContextBubble && contextMsg && (
+        <AgriBotBubble
+          state="welcome"
+          title={contextMsg.title}
+          message={contextMsg.message}
+          actions={[
+            {
+              id: contextMsg.actionLabel ? "open" : "dismiss",
+              label: contextMsg.actionLabel ?? "Got it",
+              primary: true,
+            },
+          ]}
+          onAction={handleBubbleAction}
+          onClose={() => setDismissedContextId(contextMsg.id)}
         />
       )}
 

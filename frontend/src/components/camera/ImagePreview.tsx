@@ -96,55 +96,59 @@ export function ImagePreview({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={onContinue}
-          disabled={loading}
-          data-pointer-accent
-          className={clsx(
-            "inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-6 text-base font-semibold text-white shadow-sm transition-colors",
-            "hover:bg-primary-700",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
-            "disabled:cursor-not-allowed disabled:opacity-50"
-          )}
-        >
-          Continue to analysis
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </button>
-
         <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onReplace}
-            disabled={loading}
-            className={clsx(
-              "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-primary-300 bg-white px-3 text-sm font-semibold text-primary-800 transition-colors",
-              "hover:bg-primary-50",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
-              "disabled:cursor-not-allowed disabled:opacity-50"
-            )}
-          >
-            Replace
-          </button>
           <button
             type="button"
             onClick={onRemove}
             disabled={loading}
             className={clsx(
-              "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 text-sm font-medium text-neutral-600 transition-colors",
-              "hover:bg-neutral-50",
+              "inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border-2 border-neutral-300 bg-white px-4 text-base font-medium text-neutral-700 transition-colors",
+              "hover:border-neutral-400 hover:bg-neutral-50",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
               "disabled:cursor-not-allowed disabled:opacity-50"
             )}
           >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             Remove
+          </button>
+          <button
+            type="button"
+            onClick={onReplace}
+            disabled={loading}
+            className={clsx(
+              "inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border-2 border-primary-600 bg-white px-4 text-base font-medium text-primary-700 transition-colors",
+              "hover:bg-primary-50",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
+              "disabled:cursor-not-allowed disabled:opacity-50"
+            )}
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H2m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Replace
           </button>
         </div>
 
+        <button
+          type="button"
+          onClick={onContinue}
+          disabled={loading}
+          className={clsx(
+            "inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-6 text-lg font-semibold text-white shadow-sm transition-colors",
+            "hover:bg-primary-700",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
+            "disabled:cursor-not-allowed disabled:opacity-50"
+          )}
+        >
+          Continue with this photo
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
         <p className="text-center text-xs text-neutral-500">
-          Analysis on the next screen uses sample content until the live model is connected.
+          Continuing only saves the photo for the next step — no diagnosis yet.
         </p>
       </div>
     </div>

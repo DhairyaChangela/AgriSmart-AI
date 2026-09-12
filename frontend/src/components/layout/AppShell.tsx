@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Header, LeafMark } from "./Header";
 import { MobileNav } from "./MobileNav";
 import { AgriBot } from "@/components/assistant/AgriBot";
-import { PointerAccent } from "@/components/ui/PointerAccent";
 
 interface AppShellProps {
   children: ReactNode;
@@ -48,7 +47,7 @@ export function AppShell({ children }: AppShellProps) {
                 Photo-first crop health guidance — built for the field, written in plain language.
               </p>
               <p className="text-body-sm text-neutral-500 max-w-xs">
-                Foundation build: shell and homepage only. Diagnosis and the assistant arrive in later phases.
+                The crop check, analysis, and next steps run on sample data while the diagnosis service is in prototype.
               </p>
             </div>
             <nav aria-label="Product">
@@ -88,7 +87,6 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </footer>
       <AgriBot />
-      <PointerAccent />
     </div>
   );
 }
