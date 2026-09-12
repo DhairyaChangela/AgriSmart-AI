@@ -132,7 +132,13 @@ A good photo is the whole game: clear, close, and well-lit leaves let the model 
 
 <div align="center">
 
-![How to take a good leaf photo](docs/assets/ins.png)
+<p align="center">
+  <img
+    src="docs/assets/ins.png"
+    alt="AgriSmart AI capture guidance"
+    width="650"
+  />
+</p>
 
 </div>
 
@@ -149,7 +155,14 @@ AgriBot is the farmer's companion: a **guide, not the product itself**. It stays
 
 <div align="center">
 
-![AgriBot — illustrated identity asset](docs/assets/helper_bot.png)<br>
+<p align="center">
+  <img
+    src="docs/assets/helper_bot.png"
+    alt="AgriSmart AI AgriBot assistant"
+    width="650"
+  />
+</p>
+
 <sub>*Illustrative identity asset — not a live screenshot.*</sub>
 
 </div>
