@@ -4,7 +4,7 @@
 
 **Intelligent Agriculture for a Sustainable Future**
 
-<span style="font-size: 0.98em; color: #6b7280;">*A farmer-first computer-vision system.*</span>
+*A farmer-first computer-vision system.*
 
 [![Release](https://img.shields.io/github/v/release/DhairyaChangela/AgriSmart-AI?style=flat-square&color=blue&label=Release&logo=github)](https://github.com/DhairyaChangela/AgriSmart-AI/releases)
 [![License](https://img.shields.io/github/license/DhairyaChangela/AgriSmart-AI?style=flat-square&color=green&label=License)](LICENSE)
@@ -20,7 +20,7 @@
 
 <img src="docs/assets/hero.png" alt="AgriSmart AI" width="720">
 
-[Why](#why-agrismart-ai) · [How it works](#how-it-works) · [Features](#key-features) · [Farmer experience](#farmer-experience) · [AgriBot](#agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
+[Why](#why-agrismart-ai) · [How it works](#how-it-works) · [Features](#key-features) · [Capture](#-capture-the-right-photo) · [Farmer experience](#farmer-experience) · [AgriBot](#-agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
@@ -126,16 +126,41 @@ Technical ML details never leak into the farmer-facing experience.
 
 ---
 
-## AgriBot
+## 📸 Capture the Right Photo
 
-AgriBot is a **guide, not the product itself**. It helps the farmer:
+A good photo is the whole game: clear, close, and well-lit leaves let the model work on the details that matter. Match the pattern in the reference below — framing, distance, light — and the analysis starts with its best chance.
 
-- understand what to do on the current screen,
-- take a better photo (framing, light, focus),
-- understand a result once it arrives,
-- recover from errors without losing the photo or the flow.
+<div align="center">
 
-Diagnosis always comes from the AI pipeline through the diagnosis service — never from the assistant alone.
+![How to take a good leaf photo](docs/assets/ins.png)
+
+</div>
+
+- **Get close** — fill the frame with the leaf; one clear leaf beats a wide shot.
+- **Go for even light** — daylight or soft shade; avoid harsh glare and heavy shadows.
+- **Keep it focused** — steady hands, a still leaf, and the affected part in crisp detail.
+- **Simplify the background** — plain, low-contrast surroundings keep the leaf the main subject.
+
+---
+
+## 🤖 AgriBot
+
+AgriBot is the farmer's companion: a **guide, not the product itself**. It stays in context on every screen and never stands in for the model.
+
+<div align="center">
+
+![AgriBot — illustrated identity asset](docs/assets/helper_bot.png)<br>
+<sub>*Illustrative identity asset — not a live screenshot.*</sub>
+
+</div>
+
+What AgriBot does:
+
+- **contextual navigation** — orients the farmer to the current screen and what to do next,
+- **capture guidance** — suggests framing, light, and focus for a better leaf photo,
+- **result explanation** — walks through the diagnosis in plain language,
+- **error recovery** — helps retry without losing the photo or the flow,
+- **never independently diagnoses** — diagnosis always comes from the AI pipeline through the diagnosis service.
 
 ---
 
