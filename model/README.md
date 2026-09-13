@@ -1,17 +1,39 @@
-# `model/` — AI pipeline
+# AgriSmart AI — ML Pipeline
 
-Future home of the crop/disease model lifecycle: training, inference, and evaluation.
+This directory contains the crop disease classification pipeline used by
+AgriSmart AI.
 
-## Planned responsibilities
+## Components
 
-- **Training:** dataset loading, augmentation, experiment configs.
-- **Inference:** a versioned contract — image in, prediction + confidence out.
-- **Evaluation:** scoring against the organizer-provided held-out test set.
+- `train.py` — trains the disease classifier.
+- `predict.py` — performs single-image inference.
+- `evaluate.py` — evaluates the model and generates classification metrics
+  and a confusion matrix.
+- `dataset.py` — discovers classes, builds samples, validates images, and
+  creates the train/validation split.
+- `preprocessing.py` — defines training and validation image transforms.
+- `architectures/classifier.py` — EfficientNet-B0 based classifier.
+- `labels/classes.json` — class-label mapping used during inference.
+- `checkpoints/best_model.pth` — trained model weights, distributed through
+  the GitHub Release rather than normal Git history.
 
-## Rules
+## Model
 
-- Model weights (`*.pt`, `*.pth`, `*.onnx`, checkpoints) are never committed — see `.gitignore`.
-- Final metrics are reported only after the official test set is evaluated. No invented accuracy numbers.
-- Inference must always return a confidence value; downstream layers depend on it.
+- Architecture: EfficientNet-B0
+- Input size: 224 × 224
+- Number of classes: 38
+- Training dataset: PlantVillage
+- Best validation Macro-F1: 0.9961
+- Best validation accuracy: 0.9971
 
-> Status: **Planned.** This directory currently holds no implementation.
+The reported validation metrics are from the PlantVillage validation split.
+They are not the official SIH held-out field-test score.
+
+## Download the trained model
+
+Model weights are intentionally excluded from normal Git history.
+
+Download the released checkpoint using:
+
+```powershell
+python scripts/download_model.py
