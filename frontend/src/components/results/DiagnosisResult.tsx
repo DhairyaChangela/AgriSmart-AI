@@ -6,6 +6,7 @@ import type { DiagnosisResultData, ResultActionHandlers } from "./ResultState";
 import { ConfidenceIndicator } from "./ConfidenceIndicator";
 import { ExplanationSection } from "./ExplanationSection";
 import { RecommendationCard } from "./RecommendationCard";
+import { TopPredictionsCard } from "./TopPredictionsCard";
 import { ResultActions } from "./ResultActions";
 import { MOCK_DATA_NOTICE } from "./mockResults";
 
@@ -75,6 +76,9 @@ export function DiagnosisResult({
   className,
 }: DiagnosisResultProps) {
   const isLowConfidence = result.confidenceLevel === "low";
+  const isUncertain = result.predictionStatus === "uncertain";
+  const isHealthy = result.isHealthy === true;
+  const hasAcceptedStatus = result.predictionStatus === "accepted";
 
   const scrollToExplanation = () => {
     if (onViewExplanation) {
@@ -91,8 +95,48 @@ export function DiagnosisResult({
       aria-labelledby="diagnosis-heading"
       className={clsx("mx-auto w-full max-w-5xl", className)}
     >
+      {/* Uncertain banner — the backend explicitly could not pick a winner. */}
+      {isUncertain && (
+        <div
+          role="status"
+          className="mb-5 rounded-2xl border border-warning-100 bg-warning-50 px-5 py-4 sm:px-6"
+        >
+          <div className="flex items-start gap-3">
+            <span
+              aria-hidden="true"
+              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-warning-600 shadow-xs"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-neutral-900">
+                This result needs another look.
+              </h2>
+              <p className="mt-1 text-body-sm text-neutral-700 leading-relaxed">
+                The model found a few very close matches for your photo and
+                couldn&apos;t clearly separate them
+                {typeof result.predictionGapPercent === "number" ? (
+                  <> — the gap between the top two was only {result.predictionGapPercent} percentage points.</>
+                ) : (
+                  "."
+                )}
+                {" "}Treat this as a starting point, not an answer. A closer,
+                better-lit photo usually produces a clearer result.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Low-confidence banner — encouraging, never alarming. */}
-      {isLowConfidence && (
+      {!isUncertain && isLowConfidence && (
         <div
           role="status"
           className="mb-5 rounded-2xl border border-warning-100 bg-warning-50 px-5 py-4 sm:px-6"
@@ -141,6 +185,16 @@ export function DiagnosisResult({
               <Badge variant="primary" size="sm">
                 {result.crop}
               </Badge>
+              {isHealthy && (
+                <Badge variant="success" size="sm">
+                  Healthy pattern
+                </Badge>
+              )}
+              {hasAcceptedStatus && (
+                <Badge variant="default" size="sm">
+                  Prediction accepted
+                </Badge>
+              )}
               {isPrototype && (
                 <Badge variant="default" size="sm">
                   Prototype data
@@ -149,7 +203,11 @@ export function DiagnosisResult({
             </div>
 
             <p className="mt-3 text-caption text-neutral-500">
-              {isLowConfidence ? "Possible match" : "Detected condition"}
+              {isHealthy
+                ? "Healthy pattern"
+                : isUncertain || isLowConfidence
+                  ? "Possible match"
+                  : "Detected condition"}
             </p>
             <h1
               id="diagnosis-heading"
@@ -190,6 +248,14 @@ export function DiagnosisResult({
         />
       </div>
 
+      {result.topPredictions && result.topPredictions.length > 1 && (
+        <TopPredictionsCard
+          predictions={result.topPredictions.slice(1)}
+          uncertain={isUncertain}
+          className="mt-5"
+        />
+      )}
+
       {isPrototype && (
         <p className="mt-4 rounded-xl bg-neutral-100 px-4 py-2.5 text-xs leading-relaxed text-neutral-500">
           {MOCK_DATA_NOTICE}
@@ -204,7 +270,7 @@ export function DiagnosisResult({
           onViewExplanation={scrollToExplanation}
           onContinueToGuidance={onContinueToGuidance}
           continueLabel={
-            isLowConfidence ? "Try a clearer photo first" : "Continue to guidance"
+            isUncertain || isLowConfidence ? "Try a clearer photo first" : "Continue to guidance"
           }
         />
       </div>

@@ -26,7 +26,7 @@ export interface PhotoCheck {
 
 export type AnalysisOutcome =
   | { kind: "result"; result: DiagnosisResultData }
-  | { kind: "edge"; edge: EdgeKind };
+  | { kind: "edge"; edge: EdgeKind; message?: string };
 
 export interface AnalysisRequest {
   image: SelectedImage;

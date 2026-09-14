@@ -11,12 +11,19 @@ from model.preprocessing import get_val_transform
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Final selected model
-CHECKPOINT_PATH = (
-    PROJECT_ROOT
-    / "model"
-    / "checkpoints"
-    / "generalized_model.pth"
+# Check for trained model — try common checkpoint names.
+_CHECKPOINTS_DIR = PROJECT_ROOT / "model" / "checkpoints"
+
+CHECKPOINT_PATH = next(
+    (
+        p
+        for p in [
+            _CHECKPOINTS_DIR / "generalized_model.pth",
+            _CHECKPOINTS_DIR / "best_model.pth",
+        ]
+        if p.exists()
+    ),
+    _CHECKPOINTS_DIR / "generalized_model.pth",
 )
 
 LABELS_PATH = (

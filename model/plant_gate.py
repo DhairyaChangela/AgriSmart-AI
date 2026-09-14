@@ -2,7 +2,15 @@ from pathlib import Path
 
 import torch
 from PIL import Image
-from transformers import CLIPModel, CLIPProcessor
+
+try:
+    from transformers import CLIPModel, CLIPProcessor
+
+    _TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    CLIPModel = None
+    CLIPProcessor = None
+    _TRANSFORMERS_AVAILABLE = False
 
 
 MODEL_NAME = "openai/clip-vit-base-patch32"
@@ -38,6 +46,12 @@ class PlantGate:
     MIN_MARGIN = 0.10
 
     def __init__(self):
+        if not _TRANSFORMERS_AVAILABLE:
+            raise RuntimeError(
+                "transformers is not installed; the plant gate cannot run. "
+                "Install it with: pip install transformers"
+            )
+
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
@@ -53,6 +67,11 @@ class PlantGate:
         print("Plant Gate loaded.")
 
     def classify(self, image_path: Path):
+        if not _TRANSFORMERS_AVAILABLE:
+            raise RuntimeError(
+                "transformers is not installed; the plant gate cannot run."
+            )
+
         image = Image.open(image_path).convert("RGB")
 
         inputs = self.processor(
@@ -109,4 +128,20 @@ class PlantGate:
         }
 
 
-plant_gate = PlantGate()
+_plant_gate = None
+_plant_gate_error = None
+
+
+def get_plant_gate():
+    global _plant_gate, _plant_gate_error
+
+    if _plant_gate is None and _plant_gate_error is None:
+        try:
+            _plant_gate = PlantGate()
+        except Exception as exc:
+            _plant_gate_error = exc
+
+    if _plant_gate_error is not None:
+        return None
+
+    return _plant_gate

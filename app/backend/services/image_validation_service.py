@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PIL import Image, ImageStat
 
-from model.plant_gate import plant_gate
+from model.plant_gate import get_plant_gate
 
 
 class ImageValidationService:
@@ -59,21 +59,29 @@ class ImageValidationService:
                 # Plant / Non-Plant Gate
                 # --------------------------------------------------
 
-                gate_result = plant_gate.classify(image_path)
+                gate = get_plant_gate()
 
-                if not gate_result["is_plant"]:
-                    return self._reject(
-                        "not_crop",
-                        "Please upload a clear image of a crop, plant, or leaf.",
-                        details={
-                            "plant_score_percent": gate_result[
-                                "plant_score_percent"
-                            ],
-                            "non_plant_score_percent": gate_result[
-                                "non_plant_score_percent"
-                            ],
-                        },
+                if gate is None:
+                    print(
+                        "Plant gate unavailable - skipping plant check. "
+                        "Install transformers to enable it."
                     )
+                else:
+                    gate_result = gate.classify(image_path)
+
+                    if not gate_result["is_plant"]:
+                        return self._reject(
+                            "not_crop",
+                            "Please upload a clear image of a crop, plant, or leaf.",
+                            details={
+                                "plant_score_percent": gate_result[
+                                    "plant_score_percent"
+                                ],
+                                "non_plant_score_percent": gate_result[
+                                    "non_plant_score_percent"
+                                ],
+                            },
+                        )
 
                 return self._accept()
 

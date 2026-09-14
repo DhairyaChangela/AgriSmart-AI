@@ -1,30 +1,14 @@
 {
   "name": "agrismart-ai",
-  "version": "1.0.0",
-  "description": "<div align=\"center\">",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
+  "private": true,
   "scripts": {
-    "backend": "python -m uvicorn app.backend.main:app --reload",
-    "frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+    "dev": "concurrently --names \"API,WEB\" --prefix-colors \"yellow,cyan\" \"python -m uvicorn app.backend.main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev --prefix frontend\"",
+    "dev:api": "python -m uvicorn app.backend.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:web": "npm run dev --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "build": "npm run build --prefix frontend"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DhairyaChangela/AgriSmart-AI.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/DhairyaChangela/AgriSmart-AI/issues"
-  },
-  "homepage": "https://github.com/DhairyaChangela/AgriSmart-AI#readme",
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^9.1.2"
   }
 }

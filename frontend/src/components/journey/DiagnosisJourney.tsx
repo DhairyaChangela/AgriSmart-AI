@@ -8,6 +8,7 @@ import type { AnalysisStatus } from "@/components/results";
 import { setAgriBotContext } from "@/lib/assistant/agribotContext";
 import {
   getDiagnosisService,
+  DiagnosisServiceError,
   ANALYSIS_SERVICE_NOTE,
   type AnalysisOutcome,
   type PhotoVerdict,
@@ -19,7 +20,7 @@ type Stage =
   | { name: "capture" }
   | { name: "quality" }
   | { name: "analysis" }
-  | { name: "analysis-failed" }
+  | { name: "analysis-failed"; errorMessage?: string }
   | { name: "result"; outcome: AnalysisOutcome };
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -45,9 +46,13 @@ function progressFor(stage: Stage): JourneyStep {
 
 function copyForResult(outcome: Extract<Stage, { name: "result" }>["outcome"]) {
   if (outcome.kind === "result") {
-    return { isLow: outcome.result.confidenceLevel === "low" };
+    return {
+      isLow: outcome.result.confidenceLevel === "low",
+      isUncertain: outcome.result.predictionStatus === "uncertain",
+      isHealthy: outcome.result.isHealthy === true,
+    };
   }
-  return { isLow: false };
+  return { isLow: false, isUncertain: false, isHealthy: false };
 }
 
 /**
@@ -114,15 +119,51 @@ export function DiagnosisJourney() {
         });
         break;
       case "result": {
-        const { isLow } = copyForResult(stage.outcome);
-        setAgriBotContext({
-          id: isLow ? "result-low" : "result-answer",
-          title: "AgriBot",
-          message: isLow
-            ? "I would retake this photo closer and in better light before acting on it."
-            : "Want me to explain what this result means? Open the What we found section below.",
-          actionLabel: isLow ? undefined : "Ask AgriBot",
-        });
+        const outcome = stage.outcome;
+        if (outcome.kind === "edge") {
+          if (outcome.edge === "rejected") {
+            setAgriBotContext({
+              id: "result-rejected",
+              title: "AgriBot",
+              message:
+                "The analysis was not accepted for this photo. A closer photo in softer light usually helps the model settle on an answer.",
+            });
+          } else {
+            setAgriBotContext(null);
+          }
+          break;
+        }
+        const { isLow, isUncertain, isHealthy } = copyForResult(outcome);
+        if (isUncertain) {
+          setAgriBotContext({
+            id: "result-uncertain",
+            title: "AgriBot",
+            message:
+              "This photo produced a close call between a few matches. I would retake it closer and in better light before acting on any of them.",
+          });
+        } else if (isLow) {
+          setAgriBotContext({
+            id: "result-low",
+            title: "AgriBot",
+            message:
+              "I would retake this photo closer and in better light before acting on it.",
+          });
+        } else if (isHealthy) {
+          setAgriBotContext({
+            id: "result-healthy",
+            title: "AgriBot",
+            message:
+              "The model matched the healthy pattern here — no action needed. Keep watching for any changes in the leaves.",
+          });
+        } else {
+          setAgriBotContext({
+            id: "result-answer",
+            title: "AgriBot",
+            message:
+              "Want me to explain what this result means? Open the What we found section below.",
+            actionLabel: "Ask AgriBot",
+          });
+        }
         break;
       }
       default:
@@ -195,9 +236,19 @@ export function DiagnosisJourney() {
       let outcome: AnalysisOutcome;
       try {
         outcome = await promise;
-      } catch {
+      } catch (err) {
         if (analysisIdRef.current !== id) return;
-        setStage({ name: "analysis-failed" });
+        if (err instanceof DiagnosisServiceError) {
+          // Developer diagnostics: expose error type + message.
+          console.warn("[diagnosis] analysis failed:", {
+            code: err.code,
+            message: err.message,
+          });
+          setStage({ name: "analysis-failed", errorMessage: err.message });
+        } else {
+          console.warn("[diagnosis] analysis failed:", err);
+          setStage({ name: "analysis-failed" });
+        }
         return;
       }
       if (analysisIdRef.current !== id) return;
@@ -241,7 +292,7 @@ export function DiagnosisJourney() {
 
   const current = progressFor(stage);
   const resultCopy =
-    stage.name === "result" ? copyForResult(stage.outcome) : { isLow: false };
+    stage.name === "result" ? copyForResult(stage.outcome) : { isLow: false, isUncertain: false, isHealthy: false };
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-6 sm:px-6 sm:pt-10 lg:px-8">
@@ -285,6 +336,7 @@ export function DiagnosisJourney() {
         <div>
           <AnalysisState
             status="failed"
+            errorMessage={stage.errorMessage}
             imageUrl={image.previewUrl}
             imageAlt={`${image.name} — the photo from the failed analysis`}
             onRetry={() => startAnalysis(image)}
@@ -303,13 +355,18 @@ export function DiagnosisJourney() {
           defaultExplanationOpen={false}
           onCheckAnother={restartCapture}
           onRetake={restartCapture}
-          onContinueToGuidance={resultCopy.isLow ? restartCapture : scrollToRecommendation}
+          onContinueToGuidance={
+            resultCopy.isLow || resultCopy.isUncertain
+              ? restartCapture
+              : scrollToRecommendation
+          }
         />
       )}
 
       {stage.name === "result" && stage.outcome.kind === "edge" && (
         <ResultEdgeState
           kind={stage.outcome.edge}
+          message={stage.outcome.message}
           imageUrl={image?.previewUrl ?? null}
           imageAlt={image ? `${image.name} — the photo you submitted` : "Photo submitted for analysis"}
           onRetry={() => {

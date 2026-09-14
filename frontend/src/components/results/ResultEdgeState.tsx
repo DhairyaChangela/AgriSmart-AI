@@ -7,6 +7,8 @@ import { RESULT_EDGE_COPY } from "./ResultState";
 
 export interface ResultEdgeStateProps {
   kind: EdgeKind;
+  /** Optional backend-provided reason (e.g. a validation message). */
+  message?: string;
   /** Submitted photo, kept visible so the farmer has context. */
   imageUrl?: string | null;
   imageAlt?: string;
@@ -44,6 +46,14 @@ function EdgeIcon({ kind }: { kind: EdgeKind }) {
       </svg>
     );
   }
+  if (kind === "rejected") {
+    return (
+      <svg className={common} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" strokeWidth={2} />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.5 5.5l13 13" />
+      </svg>
+    );
+  }
   if (kind === "unknown" || kind === "unsupported-crop") {
     return (
       <svg className={common} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -68,6 +78,7 @@ function EdgeIcon({ kind }: { kind: EdgeKind }) {
  */
 export function ResultEdgeState({
   kind,
+  message,
   imageUrl,
   imageAlt = "Photo submitted for analysis",
   onRetry,
@@ -104,8 +115,18 @@ export function ResultEdgeState({
           {copy.title}
         </h2>
         <p className="mx-auto mt-2 max-w-md text-body-sm text-neutral-600 leading-relaxed">
-          {copy.message}
+          {message ?? copy.message}
         </p>
+
+        {kind === "rejected" && message && (
+          <div
+            className="mt-4 w-full max-w-md break-words rounded-xl border border-warning-100 bg-warning-50 px-4 py-3 text-left"
+            role="note"
+          >
+            <h3 className="text-caption text-warning-700">Reason from the service</h3>
+            <p className="mt-1 text-body-sm text-warning-800 leading-relaxed">{message}</p>
+          </div>
+        )}
 
         {imageUrl && (
           <div className="mt-5 w-full max-w-xs overflow-hidden rounded-xl border border-neutral-200">
