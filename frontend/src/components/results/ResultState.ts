@@ -20,6 +20,23 @@
 /** Farmer-friendly confidence buckets. Never present as absolute truth. */
 export type ConfidenceLevel = "high" | "moderate" | "low";
 
+/**
+ * Backend verdict on the prediction itself (forward-compatible — the
+ * current API does not send this yet, so it is always optional).
+ * - "accepted": the backend marked the top match as usable.
+ * - "uncertain": the backend could not pick a clear winner.
+ * - "rejected": the backend refused to produce an accepted prediction.
+ */
+export type PredictionStatus = "accepted" | "uncertain" | "rejected";
+
+/** One ranked alternative the model considered (UI only, from the API). */
+export interface TopPrediction {
+  /** Pretty label, e.g. "Early blight". Never a raw class id. */
+  label: string;
+  /** Raw 0–1 model confidence. Always shown as "model confidence". */
+  confidence: number;
+}
+
 /** Honest analysis phases — describes UI progress, not fake ML stages. */
 export type AnalysisPhase = "preparing" | "analyzing" | "completing";
 
@@ -35,6 +52,8 @@ export type AnalysisStatus = AnalysisPhase | "failed";
 export type ResultKind =
   | "success"
   | "low-confidence"
+  | "uncertain"
+  | "rejected"
   | "unknown"
   | "unsupported-crop"
   | "unassessable"
@@ -42,8 +61,14 @@ export type ResultKind =
   | "model-unavailable"
   | "failed";
 
-/** Edge states rendered by ResultEdgeState (everything except confident results). */
-export type EdgeKind = Exclude<ResultKind, "success" | "low-confidence">;
+/**
+ * Edge states rendered by ResultEdgeState (everything except confident
+ * and uncertain-but-answerable results).
+ */
+export type EdgeKind = Exclude<
+  ResultKind,
+  "success" | "low-confidence" | "uncertain"
+>;
 
 /**
  * Agricultural guidance structure.
@@ -87,6 +112,14 @@ export interface DiagnosisResultData {
    * Until then the UI shows a clearly-marked placeholder.
    */
   heatmapUrl?: string | null;
+  /** Backend verdict on the prediction (forward-compatible, optional). */
+  predictionStatus?: PredictionStatus;
+  /** Ranked alternatives the model considered. Optional, UI never fakes it. */
+  topPredictions?: TopPrediction[];
+  /** Percentage-point gap between the top two candidates. Optional. */
+  predictionGapPercent?: number;
+  /** True when the backend flagged the healthy pattern for this crop. */
+  isHealthy?: boolean;
 }
 
 /** Callbacks shared by result screens. Wire to router / capture flow later. */
@@ -185,6 +218,18 @@ export const RESULT_EDGE_COPY: Record<EdgeKind, EdgeCopy> = {
     primaryAction: "retry",
     tone: "error",
   },
+  rejected: {
+    title: "We couldn't accept this prediction.",
+    message:
+      "The analysis service did not accept the result for this photo. The photo itself is fine — the model just couldn't settle on a confident answer. The reason from the service is shown below.",
+    whatToDoNext: [
+      "Retake the photo closer and in softer, even light.",
+      "Include the affected area and a healthy part for comparison.",
+      "If the result is still rejected, show the photos to a local agronomist.",
+    ],
+    primaryAction: "retake",
+    tone: "warning",
+  },
 };
 
 /** Confidence bucket thresholds for a 0–1 model score. */
@@ -193,6 +238,22 @@ export function confidenceLevelFromScore(score: number): ConfidenceLevel {
   if (score >= 0.8) return "high";
   if (score >= 0.5) return "moderate";
   return "low";
+}
+
+/**
+ * Display confidence level, respecting the backend's own verdict.
+ * When the backend explicitly marks a prediction uncertain/rejected,
+ * a raw "high" model score must never be shown as certain.
+ */
+export function effectiveConfidenceLevel(
+  score: number,
+  predictionStatus?: PredictionStatus
+): ConfidenceLevel {
+  const level = confidenceLevelFromScore(score);
+  if ((predictionStatus === "uncertain" || predictionStatus === "rejected") && level === "high") {
+    return "moderate";
+  }
+  return level;
 }
 
 export const CONFIDENCE_COPY: Record<

@@ -13,7 +13,7 @@ class ModelService:
             Path(__file__).resolve().parents[3]
             / "model"
             / "checkpoints"
-            / "best_model.pth"
+            / "generalized_model.pth"
         )
 
     def is_model_available(self):

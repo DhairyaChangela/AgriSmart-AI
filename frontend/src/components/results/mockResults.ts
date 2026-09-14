@@ -113,6 +113,7 @@ export const mockHealthyResult: DiagnosisResultData = {
   scientificName: "Prototype sample — not a real assessment",
   confidence: 0.91,
   confidenceLevel: "high",
+  isHealthy: true,
   explanation:
     "The leaf looks green and even, with no clear spots, discolouration, or damage visible in your photo. Keep watching the plant as it grows.",
   observedSigns: [
@@ -136,10 +137,49 @@ export const mockHealthyResult: DiagnosisResultData = {
   heatmapUrl: null,
 };
 
+export const mockUncertainResult: DiagnosisResultData = {
+  id: "mock-uncertain-001",
+  crop: "Tomato",
+  condition: "Early blight or Target spot (prototype)",
+  scientificName: "Prototype sample — not a real diagnosis",
+  confidence: 0.82,
+  confidenceLevel: "moderate",
+  predictionStatus: "uncertain",
+  topPredictions: [
+    { label: "Early blight", confidence: 0.82 },
+    { label: "Target spot", confidence: 0.76 },
+    { label: "Healthy pattern", confidence: 0.11 },
+  ],
+  predictionGapPercent: 6,
+  explanation:
+    "The model could not confidently pick one match for tomato. Its top match was Early blight at 82% model confidence, only 6 percentage points above the next candidate. Treat this as uncertain — a closer photo will help more than acting on it.",
+  observedSigns: [
+    "The model's top match was \"Early blight\" at 82% model confidence.",
+    "The gap to the next candidate was only 6 percentage points.",
+    "Consider the other possible matches listed below before deciding anything.",
+  ],
+  imageUrl: null,
+  imageAlt: "Submitted photo of a tomato leaf",
+  recommendation: {
+    whatToDoNow: [
+      "Don't act on this result yet — the model is not confident about it.",
+      "Take a closer photo of the affected leaf in soft, even light.",
+      "Keep affected plants separate from healthy ones where you can.",
+    ],
+    whatToWatch: [
+      "Whether the signs spread to new leaves over the next few days.",
+      "New yellowing, wilting, or leaf drop.",
+    ],
+    nextStep: "Retake the photo and check again before treating anything.",
+  },
+  heatmapUrl: null,
+};
+
 /** All mock results keyed for demos / storybook-style previews. */
 export const mockResultsById: Record<string, DiagnosisResultData> = {
   [mockHighConfidenceResult.id]: mockHighConfidenceResult,
   [mockModerateConfidenceResult.id]: mockModerateConfidenceResult,
   [mockLowConfidenceResult.id]: mockLowConfidenceResult,
   [mockHealthyResult.id]: mockHealthyResult,
+  [mockUncertainResult.id]: mockUncertainResult,
 };

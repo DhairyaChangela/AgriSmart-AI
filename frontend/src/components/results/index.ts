@@ -14,6 +14,10 @@ export {
   RecommendationCard,
   type RecommendationCardProps,
 } from "./RecommendationCard";
+export {
+  TopPredictionsCard,
+  type TopPredictionsCardProps,
+} from "./TopPredictionsCard";
 export { ResultActions, type ResultActionsProps } from "./ResultActions";
 export { ResultEdgeState, type ResultEdgeStateProps } from "./ResultEdgeState";
 export {
@@ -23,12 +27,15 @@ export {
   type DiagnosisResultData,
   type EdgeKind,
   type EdgeCopy,
+  type PredictionStatus,
+  type TopPrediction,
   type Recommendation,
   type ResultActionHandlers,
   type ResultKind,
   RESULT_EDGE_COPY,
   CONFIDENCE_COPY,
   confidenceLevelFromScore,
+  effectiveConfidenceLevel,
   formatConfidencePercent,
 } from "./ResultState";
 export {
@@ -36,6 +43,7 @@ export {
   mockHighConfidenceResult,
   mockLowConfidenceResult,
   mockModerateConfidenceResult,
+  mockUncertainResult,
   mockResultsById,
   MOCK_DATA_NOTICE,
 } from "./mockResults";

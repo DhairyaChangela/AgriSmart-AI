@@ -28,6 +28,14 @@ dist/
 .pnp.*
 
 # Dataset / Large files
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.tif
+*.tiff
+raw/
+dataset/
 data/raw/
 data/processed/
 *.zip
@@ -50,7 +58,7 @@ wandb/
 mlruns/
 
 # Generated Results
-results/
+/results/
 *.png
 
 # Database
@@ -73,4 +81,3 @@ Thumbs.db
 
 # Logs
 *.log
- | Set-Content .gitignore

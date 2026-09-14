@@ -1,9 +1,10 @@
 import type { SelectedImage } from "@/components/camera";
 import type { DiagnosisResultData } from "@/components/results";
 import {
-  confidenceLevelFromScore,
+  effectiveConfidenceLevel,
   formatConfidencePercent,
 } from "@/components/results";
+import type { PredictionStatus, TopPrediction } from "@/components/results";
 import type { DiagnosisService } from "./service";
 import { DiagnosisServiceError } from "./service";
 import type {
@@ -53,8 +54,25 @@ function prettyLabel(raw: string): string {
  * Farmer-safe generic guidance built from the real model output only.
  * No pesticide names, dosages, or treatment claims — the backend returns
  * a class label and a confidence score, and this stays within that.
+ * `uncertain` swaps in retake-first advice so nobody acts on a weak match.
  */
-function recommendationFor(crop: string, isHealthy: boolean) {
+function recommendationFor(crop: string, isHealthy: boolean, uncertain = false) {
+  if (uncertain) {
+    return {
+      whatToDoNow: [
+        "Don't act on this result yet — the model is not confident about it.",
+        "Take a closer photo of the affected leaf in soft, even light.",
+        "Keep affected plants separate from healthy ones where you can.",
+      ],
+      whatToWatch: [
+        "Whether the signs spread to new leaves over the next few days.",
+        "New yellowing, wilting, or leaf drop.",
+        "Changes after watering or weather swings.",
+      ],
+      nextStep:
+        "Retake the photo and check again before treating anything.",
+    };
+  }
   if (isHealthy) {
     return {
       whatToDoNow: [
@@ -85,6 +103,98 @@ function recommendationFor(crop: string, isHealthy: boolean) {
   };
 }
 
+/** First non-empty string among the candidate keys, or undefined. */
+function readString(
+  payload: Record<string, unknown>,
+  keys: string[]
+): string | undefined {
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.length > 0) return value;
+  }
+  return undefined;
+}
+
+/** Any finite number, or undefined. */
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
+}
+
+/**
+ * Normalize the optional `top_predictions` array. Accepts a few common
+ * field names so the client tolerates backend naming drift; entries that
+ * cannot be validated are dropped. Never fabricates a candidate.
+ */
+function toTopPredictions(value: unknown): TopPrediction[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: TopPrediction[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry)) continue;
+    const labelRaw =
+      readString(entry, ["class", "class_name", "disease", "label", "name"]) ??
+      "";
+    if (!labelRaw) continue;
+    let conf = readNumber(entry.confidence);
+    if (conf === undefined) {
+      const percent = readNumber(entry.confidence_percent);
+      if (percent !== undefined) conf = percent / 100;
+    }
+    if (conf === undefined || conf < 0 || conf > 1) continue;
+    out.push({ label: prettyLabel(labelRaw), confidence: conf });
+  }
+  out.sort((a, b) => b.confidence - a.confidence);
+  return out.length > 0 ? out : undefined;
+}
+
+/**
+ * Percentage-point gap between the top two candidates. Prefers the
+ * backend-declared `prediction_gap_percent`, else derives it from the
+ * top predictions. Only ever computed from real numbers.
+ */
+function predictionGap(
+  topPredictions: TopPrediction[] | undefined,
+  declaredPercent: number | undefined
+): number | undefined {
+  if (declaredPercent !== undefined) {
+    return Math.min(100, Math.max(0, declaredPercent));
+  }
+  if (topPredictions && topPredictions.length >= 2) {
+    const gap = Math.abs(
+      topPredictions[0].confidence - topPredictions[1].confidence
+    );
+    return Math.round(gap * 1000) / 10;
+  }
+  return undefined;
+}
+
+interface ExplanationInput {
+  crop: string;
+  diseaseName: string;
+  percent: string;
+  isHealthy: boolean;
+  predictionStatus: PredictionStatus;
+  predictionGapPercent?: number;
+}
+
+/** Plain-language explanation assembled strictly from backend fields. */
+function buildExplanation(input: ExplanationInput): string {
+  const { crop, diseaseName, percent, isHealthy, predictionStatus, predictionGapPercent } =
+    input;
+  if (predictionStatus === "uncertain") {
+    const base = `The model could not confidently pick one match for ${crop}. Its top match was ${diseaseName} at ${percent}% model confidence`;
+    if (predictionGapPercent !== undefined) {
+      return `${base}, only ${predictionGapPercent} percentage points above the next candidate. Treat this as uncertain — a clearer photo will help more than acting on it.`;
+    }
+    return `${base}. Treat this as uncertain — a clearer photo will help more than acting on it.`;
+  }
+  if (isHealthy) {
+    return `The model matched your photo to the healthy pattern for ${crop} with ${percent}% confidence. Keep an eye on the plant as it grows.`;
+  }
+  return `The model matched your photo to ${diseaseName} in ${crop} with ${percent}% confidence. This is the top result from the trained crop-disease model — confirm it with a local expert before acting.`;
+}
+
 function normalizePredictResponse(
   payload: unknown,
   image: SelectedImage,
@@ -101,6 +211,17 @@ function normalizePredictResponse(
   if (status === "model_not_ready") {
     return { kind: "edge", edge: "model-unavailable" };
   }
+
+  // Rejected: the backend refuses an accepted prediction. Surfaced as a
+  // clearly-labelled edge that carries the backend's own reason.
+  const declaredStatus = readString(payload, ["prediction_status"]);
+  if (status === "rejected" || declaredStatus === "rejected" || payload.valid === false) {
+    const message =
+      readString(payload, ["validation_message", "message", "detail"]) ??
+      undefined;
+    return { kind: "edge", edge: "rejected", message };
+  }
+
   if (status !== "success") {
     throw new DiagnosisServiceError(
       "The analysis service returned an unexpected response.",
@@ -108,34 +229,36 @@ function normalizePredictResponse(
     );
   }
 
-  const { class: modelClass, crop, disease, confidence } = payload;
+  const modelClass = readString(payload, ["class", "class_name", "predicted_class"]);
+  const crop = readString(payload, ["crop"]);
+  const disease = readString(payload, ["disease", "condition"]);
 
-  if (
-    typeof modelClass !== "string" ||
-    modelClass.length === 0 ||
-    typeof crop !== "string" ||
-    crop.length === 0 ||
-    typeof disease !== "string" ||
-    disease.length === 0
-  ) {
+  if (!modelClass || !crop || !disease) {
     throw new DiagnosisServiceError(
       "The analysis response was missing the prediction details.",
       "analysis-failed"
     );
   }
 
-  const rawConfidence =
-    typeof confidence === "number" ? confidence : Number.NaN;
-  if (
-    !Number.isFinite(rawConfidence) ||
-    rawConfidence < 0 ||
-    rawConfidence > 1
-  ) {
+  let rawConfidence = readNumber(payload.confidence);
+  if (rawConfidence === undefined) {
+    const percent = readNumber(payload.confidence_percent);
+    if (percent !== undefined) rawConfidence = percent / 100;
+  }
+  if (rawConfidence === undefined || rawConfidence < 0 || rawConfidence > 1) {
     throw new DiagnosisServiceError(
       "The analysis response contained an invalid confidence score.",
       "analysis-failed"
     );
   }
+
+  const predictionStatus: PredictionStatus =
+    declaredStatus === "uncertain" ? "uncertain" : "accepted";
+  const topPredictions = toTopPredictions(payload.top_predictions);
+  const predictionGapPercent = predictionGap(
+    topPredictions,
+    readNumber(payload.prediction_gap_percent)
+  );
 
   const isHealthy = /healthy/i.test(disease);
   const diseaseName = prettyLabel(disease);
@@ -145,26 +268,50 @@ function normalizePredictResponse(
     : diseaseName.length > 0
       ? diseaseName
       : "Unknown condition";
-  const recommendation = recommendationFor(crop, isHealthy);
+  const recommendation = recommendationFor(
+    crop,
+    isHealthy,
+    predictionStatus === "uncertain"
+  );
+
+  const observedSigns: string[] =
+    predictionStatus === "uncertain"
+      ? [
+          `The model's top match was "${diseaseName}" at ${percent}% model confidence.`,
+          ...(predictionGapPercent !== undefined
+            ? [`The gap to the next candidate was only ${predictionGapPercent} percentage points.`]
+            : []),
+          "Consider the other possible matches listed below before deciding anything.",
+        ]
+      : [
+          `The model's top match was "${diseaseName}" for ${crop}.`,
+          `It reported ${percent}% confidence in that match.`,
+          "Treat this as a starting point — confirm what you see on the plant and with an expert.",
+        ];
 
   const result: DiagnosisResultData = {
     id: `api-${requestId}`,
     crop: prettyLabel(crop) || crop,
     condition,
     confidence: rawConfidence,
-    confidenceLevel: confidenceLevelFromScore(rawConfidence),
-    explanation: isHealthy
-      ? `The model matched your photo to the healthy pattern for ${prettyLabel(crop) || crop} with ${percent}% confidence. Keep an eye on the plant as it grows.`
-      : `The model matched your photo to ${diseaseName} in ${prettyLabel(crop) || crop} with ${percent}% confidence. This is the top result from the trained crop-disease model — confirm it with a local expert before acting.`,
-    observedSigns: [
-      `The model's top match was "${diseaseName}" for ${prettyLabel(crop) || crop}.`,
-      `It reported ${percent}% confidence in that match.`,
-      "Treat this as a starting point — confirm what you see on the plant and with an expert.",
-    ],
+    confidenceLevel: effectiveConfidenceLevel(rawConfidence, predictionStatus),
+    explanation: buildExplanation({
+      crop: prettyLabel(crop) || crop,
+      diseaseName,
+      percent,
+      isHealthy,
+      predictionStatus,
+      predictionGapPercent,
+    }),
+    observedSigns,
     imageUrl: image.previewUrl ?? null,
     imageAlt: `${image.name} — the photo analysed`,
     recommendation,
     heatmapUrl: null,
+    predictionStatus,
+    topPredictions,
+    predictionGapPercent,
+    isHealthy,
   };
 
   return { kind: "result", result };

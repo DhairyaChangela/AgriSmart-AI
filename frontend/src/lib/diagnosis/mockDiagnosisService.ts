@@ -3,6 +3,7 @@ import {
   mockHighConfidenceResult,
   mockLowConfidenceResult,
   mockModerateConfidenceResult,
+  mockUncertainResult,
 } from "@/components/results/mockResults";
 import type { EdgeKind } from "@/components/results";
 import type { SelectedImage } from "@/components/camera";
@@ -20,7 +21,9 @@ import type { AnalysisOutcome, AnalysisRequest, PhotoCheck } from "./types";
  *                anything else → good
  *
  *   analyze:     "healthy" → healthy · "lowconf" → low confidence
- *                "moderate" → moderate · "unknown" → unknown edge
+ *                "moderate" → moderate · "uncertain" → uncertain result
+ *                "rejected" | "invalid" → rejected edge (with reason)
+ *                "unknown" → unknown edge
  *                "unsupported-crop" → unsupported-crop edge · "unassessable" → edge
  *                "poor" → poor-image edge · "unavailable" → model-unavailable edge
  *                "fail" → rejects (simulated service failure)
@@ -81,6 +84,13 @@ export const mockDiagnosisService: DiagnosisService = {
     if (has(image, "unavailable")) {
       return { kind: "edge", edge: "model-unavailable" };
     }
+    if (has(image, "rejected", "invalid")) {
+      return {
+        kind: "edge",
+        edge: "rejected",
+        message: "Mock validation: the model could not settle on a confident match for this photo.",
+      };
+    }
     if (has(image, "unknown")) {
       return { kind: "edge", edge: "unknown" };
     }
@@ -95,6 +105,9 @@ export const mockDiagnosisService: DiagnosisService = {
     }
     if (has(image, "healthy")) {
       return { kind: "result", result: attachPhoto(mockHealthyResult, image) };
+    }
+    if (has(image, "uncertain")) {
+      return { kind: "result", result: attachPhoto(mockUncertainResult, image) };
     }
     if (has(image, "lowconf")) {
       return { kind: "result", result: attachPhoto(mockLowConfidenceResult, image) };
