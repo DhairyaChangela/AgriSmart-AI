@@ -62,26 +62,36 @@ class ImageValidationService:
                 gate = get_plant_gate()
 
                 if gate is None:
+                    # Fail CLOSED: without the plant/non-plant gate we cannot
+                    # safely let an arbitrary image reach the 38-class disease
+                    # classifier. Refuse to diagnose rather than silently
+                    # produce a confident but meaningless crop prediction.
                     print(
-                        "Plant gate unavailable - skipping plant check. "
-                        "Install transformers to enable it."
+                        "Plant gate unavailable - refusing to diagnose "
+                        "without the plant validation layer."
                     )
-                else:
-                    gate_result = gate.classify(image_path)
+                    return self._reject(
+                        "plant_gate_unavailable",
+                        "The image safety check is temporarily unavailable. "
+                        "Please try again in a moment.",
+                        status="validation_service_unavailable",
+                    )
 
-                    if not gate_result["is_plant"]:
-                        return self._reject(
-                            "not_crop",
-                            "Please upload a clear image of a crop, plant, or leaf.",
-                            details={
-                                "plant_score_percent": gate_result[
-                                    "plant_score_percent"
-                                ],
-                                "non_plant_score_percent": gate_result[
-                                    "non_plant_score_percent"
-                                ],
-                            },
-                        )
+                gate_result = gate.classify(image_path)
+
+                if not gate_result["is_plant"]:
+                    return self._reject(
+                        "not_crop",
+                        "Please upload a clear image of a crop, plant, or leaf.",
+                        details={
+                            "plant_score_percent": gate_result[
+                                "plant_score_percent"
+                            ],
+                            "non_plant_score_percent": gate_result[
+                                "non_plant_score_percent"
+                            ],
+                        },
+                    )
 
                 return self._accept()
 
@@ -108,10 +118,10 @@ class ImageValidationService:
         }
 
     @staticmethod
-    def _reject(reason, message, details=None):
+    def _reject(reason, message, details=None, status="rejected"):
         result = {
             "valid": False,
-            "status": "rejected",
+            "status": status,
             "reason": reason,
             "message": message,
         }

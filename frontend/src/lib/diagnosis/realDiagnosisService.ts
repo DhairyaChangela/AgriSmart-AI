@@ -212,6 +212,16 @@ function normalizePredictResponse(
     return { kind: "edge", edge: "model-unavailable" };
   }
 
+  // The backend refuses to run the safety/validation layer (e.g. the plant
+  // gate could not initialize). Distinct from a rejected image: this is a
+  // system problem, so surface it as a system-error, never as an image verdict.
+  if (status === "validation_service_unavailable") {
+    throw new DiagnosisServiceError(
+      "The image safety check is temporarily unavailable. Try again in a moment.",
+      "validation-unavailable"
+    );
+  }
+
   // Rejected: the backend refuses an accepted prediction. Surfaced as a
   // clearly-labelled edge that carries the backend's own reason.
   const declaredStatus = readString(payload, ["prediction_status"]);

@@ -25,7 +25,10 @@ export interface DiagnosisService {
 export class DiagnosisServiceError extends Error {
   constructor(
     message: string,
-    public readonly code: "analysis-failed" | "service-unavailable"
+    public readonly code:
+      | "analysis-failed"
+      | "service-unavailable"
+      | "validation-unavailable"
   ) {
     super(message);
     this.name = "DiagnosisServiceError";
