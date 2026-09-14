@@ -1,0 +1,14 @@
+{
+  "name": "agrismart-ai",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"API,WEB\" --prefix-colors \"yellow,cyan\" \"python -m uvicorn app.backend.main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev --prefix frontend\"",
+    "dev:api": "python -m uvicorn app.backend.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:web": "npm run dev --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "build": "npm run build --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

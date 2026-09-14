@@ -12,7 +12,7 @@ import type {
   AnalysisRequest,
   PhotoCheck,
 } from "./types";
-import { postFormData, ApiHttpError } from "./apiClient";
+import { postFormData, ApiHttpError, getApiBaseUrl } from "./apiClient";
 
 /**
  * Real diagnosis provider — connects the journey to the AgriSmart FastAPI
@@ -361,7 +361,14 @@ export const realDiagnosisService: DiagnosisService = {
     try {
       payload = await postFormData("/predict", formData);
     } catch (err) {
+      const endpoint = `${getApiBaseUrl()}/predict`;
       if (err instanceof ApiHttpError) {
+        // Developer diagnostics: HTTP failure with a real response.
+        console.warn("[diagnosis] /predict HTTP error", {
+          url: endpoint,
+          status: err.status,
+          detail: err.detail ?? null,
+        });
         if (err.status === 400) {
           // The backend rejected the image itself (bad type or unreadable).
           return { kind: "edge", edge: "poor-image" };
@@ -372,19 +379,39 @@ export const realDiagnosisService: DiagnosisService = {
             "analysis-failed"
           );
         }
+        // Unhandled 4xx (e.g. 422 missing field) — a request-level problem,
+        // not an image quality verdict and not a down service.
         throw new DiagnosisServiceError(
-          "The analysis service is not available. Check your connection and try again.",
-          "service-unavailable"
+          "The analysis request could not be completed. Try again.",
+          "analysis-failed"
         );
       }
       // Transport error / timeout — no response at all.
+      const rawMessage = err instanceof Error ? err.message : String(err);
+      console.warn("[diagnosis] /predict transport failure", {
+        url: endpoint,
+        error: rawMessage,
+        kind: /timed out|aborterror/i.test(rawMessage) ? "timeout" : "connection",
+      });
       throw new DiagnosisServiceError(
         "The analysis service is not available. Check your connection and try again.",
         "service-unavailable"
       );
     }
 
-    return normalizePredictResponse(payload, image, requestId);
+    try {
+      return normalizePredictResponse(payload, image, requestId);
+    } catch (err) {
+      if (err instanceof DiagnosisServiceError) {
+        // Developer diagnostics: a response arrived but could not be used.
+        console.warn("[diagnosis] /predict response unusable", {
+          url: `${getApiBaseUrl()}/predict`,
+          code: err.code,
+          message: err.message,
+        });
+      }
+      throw err;
+    }
   },
 };
 

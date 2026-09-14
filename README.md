@@ -226,7 +226,7 @@ flowchart TD
 
 **Evaluation honesty.** The repository does **not** publish accuracy, F1, or benchmark numbers — none are claimed anywhere. Final results will be produced only against the **organizer-provided held-out test set**, reporting accuracy, macro F1, per-class performance, out-of-distribution behavior, and reproducibility.
 
-> Trained weights (`*.pth` / `model/checkpoints/`) are deliberately **not committed**. Until a trained checkpoint is present, `/predict` honestly returns `model_not_ready` instead of pretending to classify.
+> Trained weights (`*.pth` / `model/checkpoints/`) are deliberately **not committed**. `/predict` loads the first available checkpoint under `model/checkpoints/` — `generalized_model.pth`, falling back to `best_model.pth`. If neither is present it honestly returns `model_not_ready` instead of pretending to classify.
 
 ---
 
@@ -296,6 +296,7 @@ AgriSmart-AI/
 ├── tests/              # Future home of automated checks
 ├── .github/            # Community health files
 ├── .env.example        # Environment template (backend + frontend base URLs)
+├── package.json        # One-command startup (runs backend + frontend together)
 ├── requirements.txt    # Pinned Python dependencies
 ├── CONTRIBUTING.md
 └── LICENSE             # MIT
@@ -326,32 +327,37 @@ cd frontend
 npm install
 ```
 
+**One-command startup dependency** (root):
+
+```bash
+npm install
+```
+
 The frontend reads `NEXT_PUBLIC_API_BASE_URL` for the API (defaults to `http://localhost:8000`, matching `.env.example`). No extra `.env` is required to run everything locally.
 
 ---
 
 ## Usage
 
-1. **Start the backend** (repo root):
-   ```bash
-   uvicorn app.backend.main:app --reload
-   ```
-2. **Start the frontend** (from `frontend/`):
+1. **Start frontend + backend together** (one command, from the repo root):
    ```bash
    npm run dev
    ```
-3. Open **http://localhost:3000** → **Check your crop**.
-4. Capture or upload a leaf photo → review → *Check this leaf*.
-5. Read the result: condition, confidence, explanation, and next action.
+   This runs the FastAPI backend (`http://localhost:8000`) and the Next.js frontend (`http://localhost:3000`) side by side. Alternatively start either alone:
+   - backend only: `npm run dev:api` — or `uvicorn app.backend.main:app --reload`
+   - frontend only: `npm run dev:web` — or, from `frontend/`, `npm run dev`
+2. Open **http://localhost:3000** → **Check your crop**.
+3. Capture or upload a leaf photo → review → *Check this leaf*.
+4. Read the result: condition, confidence, explanation, and next action.
 
-**Build & lint** (from `frontend/`):
+**Build & lint:**
 
 ```bash
-npm run lint              # eslint
-npx next build --webpack  # production build (verified in this environment)
+npm run lint              # eslint (frontend)
+npm run build             # production build (frontend, Turbopack)
 ```
 
-> Environment note: on this Windows setup the default Turbopack build (`npm run build`) currently hits a pre-existing CSS `@import` ordering issue in `src/app/globals.css`; the verified build path is `npx next build --webpack`. `npm run dev` is unaffected.
+Both can be run from `frontend/`, or via the root scripts `npm run lint` / `npm run build`.
 
 **Direct API smoke test:**
 

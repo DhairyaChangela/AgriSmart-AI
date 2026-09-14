@@ -8,12 +8,21 @@ class ModelService:
     MIN_CONFIDENCE = 0.60
     MIN_TOP1_TOP2_GAP = 0.20
 
+    _CHECKPOINTS_DIR = (
+        Path(__file__).resolve().parents[3] / "model" / "checkpoints"
+    )
+
+    # Check common checkpoint names; use the first one that exists.
+    _CHECKPOINT_NAMES = ["generalized_model.pth", "best_model.pth"]
+
     def __init__(self):
-        self.checkpoint_path = (
-            Path(__file__).resolve().parents[3]
-            / "model"
-            / "checkpoints"
-            / "generalized_model.pth"
+        self.checkpoint_path = next(
+            (
+                p
+                for name in self._CHECKPOINT_NAMES
+                if (p := self._CHECKPOINTS_DIR / name).exists()
+            ),
+            self._CHECKPOINTS_DIR / self._CHECKPOINT_NAMES[0],
         )
 
     def is_model_available(self):

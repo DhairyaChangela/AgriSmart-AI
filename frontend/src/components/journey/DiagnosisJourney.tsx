@@ -8,6 +8,7 @@ import type { AnalysisStatus } from "@/components/results";
 import { setAgriBotContext } from "@/lib/assistant/agribotContext";
 import {
   getDiagnosisService,
+  DiagnosisServiceError,
   ANALYSIS_SERVICE_NOTE,
   type AnalysisOutcome,
   type PhotoVerdict,
@@ -19,7 +20,7 @@ type Stage =
   | { name: "capture" }
   | { name: "quality" }
   | { name: "analysis" }
-  | { name: "analysis-failed" }
+  | { name: "analysis-failed"; errorMessage?: string }
   | { name: "result"; outcome: AnalysisOutcome };
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -237,8 +238,17 @@ export function DiagnosisJourney() {
         outcome = await promise;
       } catch (err) {
         if (analysisIdRef.current !== id) return;
-        console.warn("[diagnosis] analysis failed:", err);
-        setStage({ name: "analysis-failed" });
+        if (err instanceof DiagnosisServiceError) {
+          // Developer diagnostics: expose error type + message.
+          console.warn("[diagnosis] analysis failed:", {
+            code: err.code,
+            message: err.message,
+          });
+          setStage({ name: "analysis-failed", errorMessage: err.message });
+        } else {
+          console.warn("[diagnosis] analysis failed:", err);
+          setStage({ name: "analysis-failed" });
+        }
         return;
       }
       if (analysisIdRef.current !== id) return;
@@ -326,6 +336,7 @@ export function DiagnosisJourney() {
         <div>
           <AnalysisState
             status="failed"
+            errorMessage={stage.errorMessage}
             imageUrl={image.previewUrl}
             imageAlt={`${image.name} — the photo from the failed analysis`}
             onRetry={() => startAnalysis(image)}
