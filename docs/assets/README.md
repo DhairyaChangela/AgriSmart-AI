@@ -2,7 +2,9 @@
 
 ## Documentation assets
 
-Committed images in this folder: `hero.png`, `ins.png`, `helper_bot.png`, `confusion_matrix.png`.
+Committed images in this folder: `hero.png`, `ins.png`, `helper_bot.png`.
+
+The 38×38 confusion matrix lives in [`report/model_report.md`](../model_report.md) as `confusion_matrix.png`.
 
 ## Planned layout
 

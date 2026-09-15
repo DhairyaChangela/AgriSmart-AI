@@ -47,7 +47,7 @@ Identify crop/leaf disease from a photo and present it as **condition → confid
 | Macro precision / recall | 0.9961 / 0.9960 |
 
 - **Per-class** precision/recall/F1 for all 38 classes: `results/phase5_reproduced_metrics.json`. Weakest: `Corn Cercospora_leaf_spot` (F1 0.967), `Corn Northern_Leaf_Blight` (0.980), `Tomato Early_blight` (0.980), `Potato healthy` (0.983).
-- **Confusion matrix (38×38):** `docs/assets/confusion_matrix.png` (source `results/confusion_matrix_phase7.png`).
+- **Confusion matrix (38×38):** [`confusion_matrix.png`](confusion_matrix.png) — reproduced from source `results/confusion_matrix_phase7.png`.
 - **Error analysis:** 32 errors on clean validation; top confusion Corn Northern_Leaf_Blight → Cercospora_leaf_spot. Confidence signal: correct median 0.9998 vs incorrect median 0.718.
 
 ### Robustness (validation images only)

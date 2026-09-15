@@ -239,7 +239,7 @@ These are **PlantVillage validation-split** results (stratified 80/20, seed 42) 
 
 ## Model report
 
-A single-page, source-verified summary of the shipped model — architecture, dataset, split, validation metrics, per-class scores, confusion matrix, robustness and shortcut diagnostics, checkpoint metadata, and reproducibility commands — lives at **[`docs/model_report.md`](docs/model_report.md)**. Every number in it is reproduced from this repository (see the sources listed at its foot).
+A single-page, source-verified summary of the shipped model — architecture, dataset, split, validation metrics, per-class scores, confusion matrix, robustness and shortcut diagnostics, checkpoint metadata, and reproducibility commands — lives at **[`report/model_report.md`](report/model_report.md)**. Every number in it is reproduced from this repository (see the sources listed at its foot).
 
 ---
 
@@ -304,7 +304,8 @@ AgriSmart-AI/
 ├── frontend/           # Next.js + React + TypeScript + Tailwind journey
 ├── model/              # EfficientNet-B0: architecture, train, predict, evaluate, preprocessing, classes
 ├── data/               # Dataset layout & metadata (large data never committed)
-├── docs/               # Architecture + product docs + one-page model report
+├── docs/               # Architecture + product docs
+├── report/             # One-page model report + confusion matrix
 ├── scripts/            # Tooling: model download, dataset download
 ├── tests/              # Future home of automated checks
 ├── .github/            # Community health files
@@ -426,7 +427,7 @@ Until then, every screen the farmer sees behaves as a responsible product should
 | Backend API                 | Live — `/predict`, `/health`, `/history`, SQLite history   |
 | Frontend ↔ API integration  | Live — verified end-to-end against real `/predict`         |
 | ML model code               | Live — EfficientNet-B0 38-class train/predict/evaluate     |
-| Model report                | Live — one-page [model report](docs/model_report.md) with reproduced metrics |
+| Model report                | Live — one-page [model report](report/model_report.md) with reproduced metrics |
 | Live inference              | Requires the released checkpoint (`python scripts/download_model.py`) — `model_not_ready` until present |
 | Evaluation                  | Validation baseline reproduced (acc 0.9971 / Macro-F1 0.9961); official held-out set pending |
 | Out-of-distribution claims  | Not claimed                                                |

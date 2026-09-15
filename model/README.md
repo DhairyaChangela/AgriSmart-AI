@@ -37,3 +37,18 @@ Download the released checkpoint using:
 
 ```powershell
 python scripts/download_model.py
+```
+
+This writes `model/checkpoints/best_model.pth` and verifies its SHA-256 hash.
+
+## Evaluation
+
+`model/evaluate.py` reproduces the validation split and the reported metrics
+(needs the dataset restored at `data/processed/raw/color`):
+
+```powershell
+python -m model.evaluate
+```
+
+See the [model report](../report/model_report.md) for one-page summary of the
+model, data, evaluation, and limitations.
