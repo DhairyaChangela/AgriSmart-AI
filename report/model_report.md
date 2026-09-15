@@ -35,7 +35,8 @@ Identify crop/leaf disease from a photo and present it as **condition → confid
 
 | Category | Result |
 |---|---|
-| **Clean validation (reproduced baseline)** | Accuracy **0.99705** (10829/10861) · Macro-F1 **0.99606** — reproduced by `model/evaluate.py` (stratified 20%, seed 42) and matches the checkpoint's recorded `val_accuracy`/`val_macro_f1` bit-for-bit. |
+| **Clean validation (reproduced from this repo)** | Accuracy **0.99705** (10829/10861) · Macro-F1 **0.99606** — reproduced by `model/evaluate.py` (stratified 20%, seed 42) and matches the checkpoint's recorded `val_accuracy`/`val_macro_f1` bit-for-bit. |
+| **Baseline & comparison** | **Organizer baseline: not available in the locally provided materials.** No official SIH held-out/field scores or a reference model were distributable here, so no external baseline could be reproduced or compared against. All numbers above are internal PlantVillage validation results only. |
 | **Official held-out testing** | **Not yet measured** — no held-out/field set is available locally. |
 
 ## Metrics (clean validation split)
@@ -46,7 +47,7 @@ Identify crop/leaf disease from a photo and present it as **condition → confid
 | Macro-F1 | 0.9961 |
 | Macro precision / recall | 0.9961 / 0.9960 |
 
-- **Per-class** precision/recall/F1 for all 38 classes: `results/phase5_reproduced_metrics.json`. Weakest: `Corn Cercospora_leaf_spot` (F1 0.967), `Corn Northern_Leaf_Blight` (0.980), `Tomato Early_blight` (0.980), `Potato healthy` (0.983).
+- **Per-class** precision/recall/F1 for all 38 classes: [`per_class_metrics.csv`](per_class_metrics.csv) (committed alongside this report). Weakest: `Corn Cercospora_leaf_spot` (F1 0.967), `Corn Northern_Leaf_Blight` (0.980), `Tomato Early_blight` (0.980), `Potato healthy` (0.983).
 - **Confusion matrix (38×38):** [`confusion_matrix.png`](confusion_matrix.png) — reproduced from source `results/confusion_matrix_phase7.png`.
 - **Error analysis:** 32 errors on clean validation; top confusion Corn Northern_Leaf_Blight → Cercospora_leaf_spot. Confidence signal: correct median 0.9998 vs incorrect median 0.718.
 
@@ -92,4 +93,4 @@ Training/evaluation additionally requires the dataset present at the path expect
 
 ---
 
-*Sources: `model/*` code; `results/ml_phase1_audit_report.md`, `results/phase5_reproduced_metrics.json`, `results/error_analysis.json`, `results/phase6_8_robustness_shortcut_summary.json` (local, git-ignored).*
+*Sources: `model/*` code; per-class metrics [`per_class_metrics.csv`](per_class_metrics.csv) (committed). Supporting detail (`results/ml_phase1_audit_report.md`, `results/phase5_reproduced_metrics.json`, `results/error_analysis.json`, `results/phase6_8_robustness_shortcut_summary.json`) is local and git-ignored — the committed CSV is the judge-verifiable evidence.*
