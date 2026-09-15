@@ -6,7 +6,7 @@ This directory contains the Next.js frontend application for AgriSmart AI.
 
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
-- **Styling:** Tailwind CSS 4
+- **Styling:** Tailwind CSS 3
 - **Linting:** ESLint
 
 ## Getting Started
@@ -26,7 +26,10 @@ frontend/
 │   └── app/
 │       ├── layout.tsx       # Root layout
 │       ├── page.tsx         # Home page
+│       ├── check-crop/      # Capture → review → analysis journey
 │       └── globals.css      # Global styles
+├── src/components/          # UI components (camera, guidance, AgriBot)
+├── src/lib/                 # API clients and diagnosis services
 ├── public/                  # Static assets
 ├── package.json
 ├── tsconfig.json

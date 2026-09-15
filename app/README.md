@@ -1,18 +1,31 @@
-# `app/` — Application layer
+# `app/` — Application (backend + orchestration entry point)
 
-Future home of everything the farmer touches: image capture, quality feedback, results, guidance, and the AgriBot assistant surface.
+Everything the application needs to run live: the FastAPI backend, and the
+one-command orchestration that starts backend + frontend together.
 
-## Planned responsibilities
+## Layout
 
-- Crop/leaf photo capture and upload.
-- Client-side image validation feedback (size, type, framing hints).
-- API communication — no model logic lives here.
-- Diagnosis display: disease, confidence, explanation, next steps.
-- Error and retry states for every failure mode.
+| Path                        | Role                                                            |
+| --------------------------- | --------------------------------------------------------------- |
+| `backend/`                  | FastAPI service — `/predict`, `/health`, `/history`, services, SQLite persistence |
+| `backend/api/`              | HTTP endpoints (routers)                                        |
+| `backend/services/`         | Business logic: model orchestration, plant gate, image validation, diagnosis service |
+| `backend/database/`         | SQLite connection, models, migration bootstrap                    |
+| `package.json`              | Root orchestration: `npm run dev` runs FastAPI + Next.js together |
 
-## Boundaries
+## Running
 
-- No training code, no model weights, no inference logic.
-- No hard-coded diagnosis content — all results arrive via the backend contract.
+From the repository root:
 
-> Status: **Current.** The backend (`app/backend/`) implements the FastAPI API — `/predict`, `/health`, `/history` — including upload validation, inference orchestration, and SQLite history. The farmer-facing UI lives in `frontend/`.
+```bash
+npm run dev        # FastAPI (port 8000) + Next.js (port 3000) together
+npm run dev:api    # FastAPI only
+```
+
+## What is served
+
+- `POST /predict` — image upload → validation → plant gate → 38-class classifier → confidence-aware result (`accepted` / `uncertain` / `rejected` / `model_not_ready`).
+- `GET /history` — latest predictions persisted to SQLite.
+- `GET /health` — liveness.
+
+See the root [README](../README.md#api) for the full API contract and response states.
