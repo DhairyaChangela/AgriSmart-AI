@@ -296,7 +296,7 @@ export function DiagnosisJourney() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-6 sm:px-6 sm:pt-10 lg:px-8">
-      <JourneyProgress current={current} className="mb-7 sm:mb-9" />
+      <JourneyProgress current={current} className="mb-9 sm:mb-11" />
 
       {stage.name === "capture" && (
         <CropCapture

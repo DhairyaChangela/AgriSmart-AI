@@ -60,7 +60,7 @@ const STEPS: { key: CaptureStep; label: string; icon: React.ReactNode }[] = [
 function StepIndicator({ current }: { current: CaptureStep }) {
   const currentIndex = STEPS.findIndex((s) => s.key === current);
   return (
-    <nav aria-label="Capture progress" className="mx-auto mb-6 flex w-full max-w-sm items-center">
+    <nav aria-label="Capture progress" className="relative mx-auto mb-8 flex w-full max-w-sm items-center px-2">
       <ol className="flex w-full items-center justify-between" role="list">
         {STEPS.map((step, i) => {
           const isActive = step.key === current;
@@ -70,16 +70,16 @@ function StepIndicator({ current }: { current: CaptureStep }) {
               <span
                 aria-current={isActive ? "step" : undefined}
                 className={clsx(
-                  "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors",
+                  "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
                   isActive
-                    ? "border-primary-600 bg-primary-600 text-white"
+                    ? "border-primary-500 bg-white text-primary-700"
                     : isDone
-                      ? "border-success-500 bg-success-500 text-white"
-                      : "border-neutral-300 bg-white text-neutral-400"
+                      ? "border-success-500 bg-success-50 text-success-600"
+                      : "border-neutral-200 bg-white text-neutral-400"
                 )}
               >
                 {isDone ? (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 ) : (
@@ -99,8 +99,8 @@ function StepIndicator({ current }: { current: CaptureStep }) {
         })}
       </ol>
       {/* Connecting lines */}
-      <div className="absolute top-[18px] left-12 right-12 flex items-center" aria-hidden="true">
-        <div className="h-px flex-1 bg-neutral-200" />
+      <div className="absolute left-12 right-12 top-4 flex items-center" aria-hidden="true">
+        <div className="h-px flex-1 bg-neutral-100" />
       </div>
     </nav>
   );

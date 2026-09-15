@@ -20,6 +20,8 @@ export type AgriBotFollowUpId = "helpful" | "not-quite" | "topics" | "check-crop
 interface AgriBotPanelProps extends HTMLAttributes<HTMLDivElement> {
   state: AgriBotState;
   activeTopic: AgriBotTopic | null;
+  /** Optional journey-aware tip shown above the topics when present. */
+  contextMessage?: string | null;
   onClose: () => void;
   onPickTopic: (topic: AgriBotTopic) => void;
   onFollowUp: (id: AgriBotFollowUpId) => void;
@@ -55,7 +57,7 @@ function CloseButton({ onClick }: { onClick: () => void }) {
 }
 
 export const AgriBotPanel = forwardRef<HTMLDivElement, AgriBotPanelProps>(
-  ({ state, activeTopic, onClose, onPickTopic, onFollowUp, className, ...props }, ref) => {
+  ({ state, activeTopic, contextMessage, onClose, onPickTopic, onFollowUp, className, ...props }, ref) => {
     const status = AGRIBOT_STATUS[state];
     const isBusy = state === "thinking" || state === "loading";
     const entered = useEntered();
@@ -98,6 +100,15 @@ className={clsx(
                 <h2 className="text-h4 text-neutral-900">{AGRIBOT_HELP_HEADING}</h2>
                 <p className="mt-1 text-body-sm text-neutral-600 leading-relaxed">{AGRIBOT_HELP_MESSAGE}</p>
               </div>
+              {contextMessage && (
+                <div
+                  role="note"
+                  className="flex items-start gap-2.5 rounded-xl border border-primary-100 bg-primary-50 px-3.5 py-3"
+                >
+                  <AgriBotAvatar state={state} size="sm" className="mt-0.5 shrink-0" />
+                  <p className="text-body-sm text-neutral-700 leading-relaxed">{contextMessage}</p>
+                </div>
+              )}
               <nav className="space-y-2" aria-label="Suggested questions">
                 {AGRIBOT_TOPICS.map((topic) => (
                   <button
