@@ -52,8 +52,8 @@ export function AppShell({ children }: AppShellProps) {
               </p>
             </div>
             <nav aria-label="Product">
-              <h2 className="text-caption text-neutral-500 mb-4">Product</h2>
-              <ul className="space-y-3" role="list">
+              <h2 className="mb-2 text-caption text-neutral-500">Product</h2>
+              <ul className="space-y-2.5" role="list">
                 <li>
                   <Link href="/check-crop" className="text-body-sm font-medium text-neutral-700 hover:text-primary-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 rounded">
                     Check your crop
@@ -64,21 +64,16 @@ export function AppShell({ children }: AppShellProps) {
                     How it works
                   </Link>
                 </li>
-                <li>
-                  <Link href="/" className="text-body-sm font-medium text-neutral-700 hover:text-primary-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 rounded">
-                    Home
-                  </Link>
-                </li>
               </ul>
             </nav>
-            <nav aria-label="What to expect">
-              <h2 className="text-caption text-neutral-500 mb-4">What to expect</h2>
-              <ul className="space-y-3 text-body-sm text-neutral-600" role="list">
-                <li>Clear photo guidance</li>
-                <li>Honest confidence levels</li>
-                <li>Plain-language next steps</li>
+            <section aria-labelledby="footer-expect-heading">
+              <h2 id="footer-expect-heading" className="mb-2 text-caption text-neutral-500">What to expect</h2>
+              <ul className="space-y-2.5 text-body-sm text-neutral-600" role="list">
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary-300" aria-hidden="true" />Clear photo guidance</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary-300" aria-hidden="true" />Honest confidence levels</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary-300" aria-hidden="true" />Plain-language next steps</li>
               </ul>
-            </nav>
+            </section>
           </div>
           <div className="mt-10 pt-6 border-t border-neutral-200">
             <p className="text-body-sm text-neutral-500">

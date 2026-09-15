@@ -47,6 +47,8 @@ export function LeafMark({ className }: { className?: string }) {
 export function Header({ onMenuClick, isMenuOpen = false }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const isCheckCropRoute = pathname === "/check-crop" || pathname.startsWith("/check-crop/");
+  const ctaVariant = pathname === "/" || isCheckCropRoute ? "ghost" : "primary";
 
   useEffect(() => {
     const onScroll = () => {
@@ -116,7 +118,8 @@ export function Header({ onMenuClick, isMenuOpen = false }: HeaderProps) {
           <div className="hidden md:flex items-center">
             <Link
               href="/check-crop"
-              className={getButtonClassName({ size: "lg" })}
+              aria-current={isCheckCropRoute ? "page" : undefined}
+              className={getButtonClassName({ size: "lg", variant: ctaVariant })}
             >
               Check your crop
             </Link>

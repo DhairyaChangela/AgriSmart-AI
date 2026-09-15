@@ -113,25 +113,18 @@ export default function HomePage() {
           </div>
 
           <div className="mx-auto mt-8 max-w-3xl">
-            <ol className="relative" role="list">
-              <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-primary-300 via-primary-400 to-primary-200 hidden md:block" aria-hidden="true" />
-              <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-primary-300 md:hidden" aria-hidden="true" />
+            <ol className="relative space-y-6" role="list">
+              <div className="absolute bottom-6 left-5 top-5 w-0.5 bg-gradient-to-b from-primary-300 via-primary-400 to-primary-200 md:left-6" aria-hidden="true" />
 
-              {steps.map((step, i) => (
-                <li key={step.number} className="relative pl-12 sm:pl-16">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+              {steps.map((step) => (
+                <li key={step.number} className="relative flex gap-4">
                     <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-700 text-white shadow-primary md:h-12 md:w-12" aria-hidden="true">
                       <span className="text-sm font-bold">{step.number}</span>
                     </div>
-                    <div className="min-w-0">
-                      <span className="text-caption font-bold tracking-widest text-primary-400">STEP {step.number}</span>
-                      <h3 className="mt-0.5 text-h4 text-neutral-900">{step.title}</h3>
+                    <div className="min-w-0 pt-1">
+                      <h3 className="text-h4 text-neutral-900">{step.title}</h3>
                       <p className="mt-1 text-body-sm text-neutral-600 leading-relaxed">{step.description}</p>
                     </div>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div className="ml-5 mt-2 h-0 w-0.5 bg-primary-200 border-t border-dashed border-primary-200 sm:hidden" aria-hidden="true" />
-                  )}
                 </li>
               ))}
             </ol>
@@ -154,13 +147,13 @@ export default function HomePage() {
 
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {trustItems.map((item) => (
-              <article key={item.title} className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700" aria-hidden="true">
+              <article key={item.title} className="flex h-full flex-col rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-50 text-primary-700" aria-hidden="true">
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 </div>
                 <h3 className="mt-4 text-h4 text-neutral-900">{item.title}</h3>
                 <p className="mt-2 text-body-sm text-neutral-600 leading-relaxed">{item.description}</p>
-                <p className="mt-3 text-xs font-medium text-primary-700">{item.detail}</p>
+                <p className="mt-4 text-xs font-medium text-primary-700">{item.detail}</p>
               </article>
             ))}
           </div>
@@ -177,7 +170,7 @@ export default function HomePage() {
               <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full border-[16px] border-white/5" />
             </div>
             <div className="relative mx-auto max-w-xl text-center">
-              <p className="text-caption font-semibold text-primary-200">Your crop is waiting</p>
+              <p className="text-sm font-semibold text-primary-200">Your crop is waiting</p>
               <h2 id="final-cta-heading" className="mt-3 text-h2 text-white">One photo could tell you what to do.</h2>
               <p className="mx-auto mt-3 max-w-md text-body text-primary-100">Pick the worst-looking leaf. Photograph it in daylight. Get clear next steps — and know when to call an expert.</p>
               <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

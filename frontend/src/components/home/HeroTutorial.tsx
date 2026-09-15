@@ -206,7 +206,7 @@ function ReviewScreen({ active }: ScreenProps) {
               Looks good — Continue
             </div>
           </div>
-          <p className="mt-2 text-center text-[10px] text-neutral-500" aria-hidden="true">
+          <p className="mt-2 text-center text-xs text-neutral-500" aria-hidden="true">
             Sample preview — a clear photo helps later.
           </p>
         </div>
@@ -389,14 +389,6 @@ export function HeroTutorial() {
       onBlurCapture={() => setPaused(false)}
       className="relative mx-auto w-full max-w-[268px] sm:max-w-[300px] lg:max-w-[320px]"
     >
-      <p className="mb-3 hidden items-center justify-center gap-1 text-caption font-semibold text-primary-700 sm:flex">
-        <span>Photograph</span>
-        <MiniArrowRightIcon className="h-3 w-3 text-primary-400" />
-        <span>Review</span>
-        <MiniArrowRightIcon className="h-3 w-3 text-primary-400" />
-        <span>See what’s next</span>
-      </p>
-
       <div className="relative">
         <div
           aria-hidden="true"
@@ -438,7 +430,7 @@ export function HeroTutorial() {
           onComplete={advance}
         />
       </div>
-      <p className="mt-2 text-center text-[11px] text-neutral-500">
+      <p className="mt-2 text-center text-xs text-neutral-500">
         Illustrative walkthrough — not a real diagnosis.
       </p>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { AgriBotAvatar } from "./AgriBotAvatar";
 import { AgriBotBubble } from "./AgriBotBubble";
@@ -23,11 +23,11 @@ interface AgriBotProps {
 }
 
 export function AgriBot({ className }: AgriBotProps) {
+  const panelId = useId();
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<AgriBotState>("welcome");
   const [activeTopic, setActiveTopic] = useState<AgriBotTopic | null>(null);
   const [showBubble, setShowBubble] = useState(false);
-  const [bubbleDismissed, setBubbleDismissed] = useState(false);
   const [contextMsg, setContextMsg] = useState<AgriBotContextMessage | null>(() =>
     getAgriBotContext()
   );
@@ -36,19 +36,23 @@ export function AgriBot({ className }: AgriBotProps) {
 
   const launcherRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const timersRef = useRef<number[]>([]);
+  const timerIdsRef = useRef<number[]>([]);
   const hasOpenedRef = useRef(false);
 
-  const clearTimer = useCallback((id: number | undefined) => {
-    if (id !== undefined) {
-      window.clearTimeout(id);
-      timersRef.current = timersRef.current.filter((t) => t !== id);
-    }
+  const schedule = useCallback((callback: () => void, delay: number) => {
+    const id = window.setTimeout(callback, delay);
+    timerIdsRef.current.push(id);
+    return id;
+  }, []);
+
+  const clearScheduled = useCallback((id: number) => {
+    window.clearTimeout(id);
+    const index = timerIdsRef.current.indexOf(id);
+    if (index !== -1) timerIdsRef.current.splice(index, 1);
   }, []);
 
   const openPanel = useCallback(() => {
     hasOpenedRef.current = true;
-    setBubbleDismissed(true);
     setShowBubble(false);
     if (contextMsg) setDismissedContextId(contextMsg.id);
     setOpen(true);
@@ -71,21 +75,14 @@ export function AgriBot({ className }: AgriBotProps) {
   // welcome delay) and a fresh id re-shows a previously dismissed bubble.
   const showContextBubble = contextMsg !== null && dismissedContextId !== contextMsg.id;
 
-  useEffect(() => {
-    if (open || bubbleDismissed || hasOpenedRef.current || contextMsg) return;
-    const id = window.setTimeout(() => setShowBubble(true), 1400);
-    timersRef.current.push(id);
-    return () => clearTimer(id);
-  }, [open, bubbleDismissed, clearTimer, contextMsg]);
-
-  useEffect(() => {
+useEffect(() => {
     if (open) {
-      const id = window.setTimeout(() => panelRef.current?.focus(), 160);
-      timersRef.current.push(id);
+      const id = schedule(() => panelRef.current?.focus(), 160);
+      return () => clearScheduled(id);
     } else {
       launcherRef.current?.focus();
     }
-  }, [open]);
+  }, [open, schedule, clearScheduled]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,21 +110,23 @@ export function AgriBot({ className }: AgriBotProps) {
   }, [open]);
 
   useEffect(() => {
+    const pendingTimers = timerIdsRef.current;
     return () => {
-      timersRef.current.forEach((id) => window.clearTimeout(id));
+      pendingTimers.forEach((id) => window.clearTimeout(id));
     };
   }, []);
 
-  const pickTopic = useCallback((topic: AgriBotTopic) => {
-    setBubbleDismissed(true);
-    setShowBubble(false);
-    hasOpenedRef.current = true;
-    setActiveTopic(topic);
-    setState("thinking");
-    setOpen(true);
-    const id = window.setTimeout(() => setState("explaining"), 900);
-    timersRef.current.push(id);
-  }, []);
+  const pickTopic = useCallback(
+    (topic: AgriBotTopic) => {
+      setShowBubble(false);
+      hasOpenedRef.current = true;
+      setActiveTopic(topic);
+      setState("thinking");
+      setOpen(true);
+      schedule(() => setState("explaining"), 900);
+    },
+    [schedule]
+  );
 
   const handleFollowUp = useCallback((id: AgriBotFollowUpId) => {
     if (id === "topics") {
@@ -142,7 +141,6 @@ export function AgriBot({ className }: AgriBotProps) {
 
   const handleBubbleAction = useCallback(
     (id: string) => {
-      setBubbleDismissed(true);
       setShowBubble(false);
       if (contextMsg) setDismissedContextId(contextMsg.id);
       if (id === "open") {
@@ -162,7 +160,7 @@ export function AgriBot({ className }: AgriBotProps) {
 
   return (
     <div className={clsx("fixed right-3 bottom-3 z-[300] sm:right-5 sm:bottom-5", className)}>
-      {showBubble && !contextMsg && (
+      {showBubble && !contextMsg && !open && (
         <AgriBotBubble
           state="welcome"
           title={AGRIBOT_WELCOME_TITLE}
@@ -173,13 +171,12 @@ export function AgriBot({ className }: AgriBotProps) {
           ]}
           onAction={handleBubbleAction}
           onClose={() => {
-            setBubbleDismissed(true);
             setShowBubble(false);
           }}
         />
       )}
 
-      {showContextBubble && contextMsg && (
+      {showContextBubble && contextMsg && !open && (
         <AgriBotBubble
           state="welcome"
           title={contextMsg.title}
@@ -199,7 +196,7 @@ export function AgriBot({ className }: AgriBotProps) {
       {open && (
         <AgriBotPanel
           ref={panelRef}
-          id="agribot-panel"
+          id={panelId}
           state={state}
           activeTopic={activeTopic}
           onClose={closePanel}
@@ -208,29 +205,31 @@ export function AgriBot({ className }: AgriBotProps) {
         />
       )}
 
-      <button
-        ref={launcherRef}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls="agribot-panel"
-        aria-label={open ? "Close AgriBot assistant" : "Open AgriBot assistant"}
-        onClick={handleToggle}
-        className={clsx(
-          "relative flex h-14 w-14 items-center justify-center rounded-full",
-          "border border-neutral-200 bg-white shadow-lg",
-          "transition-all duration-200 ease-out",
-          "hover:border-primary-200 hover:shadow-primary",
-          "active:bg-neutral-50",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-        )}
-      >
-        <AgriBotAvatar state={state} size="lg" className="pointer-events-none" />
-        <span
-          className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-primary-500"
-          aria-hidden="true"
-        />
-      </button>
+      {!open && (
+        <button
+          ref={launcherRef}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={panelId}
+          aria-label="Open AgriBot assistant"
+          onClick={handleToggle}
+          className={clsx(
+            "relative flex h-14 w-14 items-center justify-center rounded-full",
+            "border border-neutral-200 bg-white shadow-lg",
+            "transition-all duration-200 ease-out",
+            "hover:border-primary-200 hover:shadow-primary",
+            "active:bg-neutral-50",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+          )}
+        >
+          <AgriBotAvatar state={state} size="lg" className="pointer-events-none" />
+          <span
+            className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-primary-500"
+            aria-hidden="true"
+          />
+        </button>
+      )}
     </div>
   );
 }
