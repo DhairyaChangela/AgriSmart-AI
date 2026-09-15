@@ -74,10 +74,12 @@ Flat-green background **0.400** accuracy · grayscale **0.598** — the model re
 ```bash
 pip install -r requirements.txt
 python scripts/download_model.py          # model/checkpoints/best_model.pth
-python model/evaluate.py                  # reproduces val split + metrics (requires dataset)
-python model/predict.py --image leaf.jpg
+python -m model.evaluate                  # reproduces val split + metrics (requires dataset)
+python -m model.predict --image leaf.jpg
 npm install && npm run dev                # FastAPI :8000 + Next.js :3000
 ```
+
+Note: `predict.py` / `evaluate.py` / `train.py` are run as modules (`python -m model.*`) so the repository root is on `sys.path` — invoking them as bare scripts (`python model/predict.py`) fails to resolve the `model` package imports.
 
 Training/evaluation additionally requires the dataset present at the path expected by `model/dataset.py` (`data/processed/raw/color`).
 
