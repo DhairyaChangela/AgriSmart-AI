@@ -20,7 +20,7 @@
 
 <img src="docs/assets/hero.png" alt="AgriSmart AI" width="720">
 
-[Why](#why-agrismart-ai) · [How it works](#how-it-works) · [Features](#key-features) · [Capture](#-capture-the-right-photo) · [Farmer experience](#farmer-experience) · [AgriBot](#-agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [Model report](#model-report) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
+[Why](#why-agrismart-ai) · [What we built](#what-we-built) · [How it works](#how-it-works) · [Features](#key-features) · [Capture](#-capture-the-right-photo) · [Farmer experience](#farmer-experience) · [AgriBot](#-agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [Model report](#model-report) · [Demo & deployment](#demo--deployment) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
@@ -67,25 +67,58 @@ Every stage is honest: the system never presents machine output as certainty, ne
 
 ---
 
+## What we built
+
+### Core modules (crop disease detection)
+
+| Module | What it does | Key files |
+|--------|-------------|-----------|
+| ML classification pipeline | EfficientNet-B0, 38-class, training, evaluation, prediction | `model/train.py`, `model/evaluate.py`, `model/predict.py` |
+| Plant / non-plant gate | CLIP zero-shot fail-closed gate — rejects non-plant images **before** they reach the classifier | `model/plant_gate.py` |
+| Backend API | FastAPI `/predict`, `/health`, `/history`; file validation, stage orchestration, uncertainty handling | `app/backend/` |
+| Frontend diagnosis journey | Camera capture, gallery upload, review-before-analyze, result display, AgriBot companion | `frontend/` |
+
+### Bonus modules
+
+| Module | What it does |
+|--------|-------------|
+| AgriBot assistant | Contextual screen-by-screen guide; never independently diagnoses; helps recover from errors |
+| Decision-support UX | Confidence-aware results, plain-language explanations, actionable next steps, honest uncertainty |
+| Robustness evaluation | Blur, JPEG, crop, rotation, brightness, contrast, occlusion, shortcut diagnostics (flat-green, grayscale, bokeh) |
+| Model report + evidence | One-page model report, per-class scores, confusion matrix, and robustness/shortcut diagnostics — all in [`report/`](report/) |
+
+---
+
 ## How it works
 
 One continuous journey — capture, check, analyze, understand, act — with a recovery path at every step:
 
 ```mermaid
 flowchart TD
-    Capture[Capture or upload a leaf photo] --> Check[Format check]
+    Capture[Capture or upload a leaf photo] --> Check[File extension check]
     Check -->|Unsupported file| RetryFile[Explain + choose another image]
     RetryFile --> Capture
-    Check -->|OK| Analyze[Analyze<br/>POST /predict]
-    Analyze -->|Model unavailable| Unavail[Explain + try again]
+    Check -->|OK| Analyze[POST /predict]
+    Analyze -->|Backend unavailable| Unavail[Explain + try again]
     Analyze -->|System error| Fail[Explain + try again]
     Unavail --> Analyze
     Fail --> Analyze
-    Analyze -->|Prediction| Conf{Confidence}
-    Conf -->|High / moderate| Result[Crop-disease result + confidence + explanation + next action]
-    Conf -->|Low| LowResult[Possible match, suggest a clearer photo]
-    Result --> Act[Continue to guidance]
+    Analyze -->|Stage 1: image open| Gate{Plant gate<br/>CLIP zero-shot<br/>fail-closed}
+    Gate -->|Non-plant| Rejected[Explain: not a plant leaf]
+    Gate -->|Plant| Classifier[EfficientNet-B0<br/>38 classes]
+    Classifier --> Decision{Confidence<br/>check}
+    Decision -->|High + gap| Accepted[Result: condition · confidence · explanation · next action]
+    Decision -->|Low or close| Uncertain[Honest uncertainty · suggest clearer photo]
+    Decision -->|No checkpoint| Ready[model_not_ready]
+    Rejected --> Farmer[Farmer]
+    Accepted --> Farmer
+    Uncertain --> Farmer
+    Ready --> Farmer
 ```
+
+- **Plant gate (fail-closed):** a CLIP zero-shot check runs **before** the 38-class classifier. Non-plant images are rejected immediately and never reach the disease model.
+- **Accepted vs uncertain:** high confidence **and** a clear gap to the second-best class → definitive result. Low confidence or a close second → honest uncertainty, with the farmer encouraged to retake.
+- **model_not_ready:** if no checkpoint is present, the system says so honestly instead of pretending to classify.
 
 ---
 
@@ -99,7 +132,8 @@ flowchart TD
 ### AI diagnosis
 - **EfficientNet-B0** (PyTorch), 38 crop/disease classes
 - 224×224 images, ImageNet normalization, server-side preprocessing
-- **Confidence-aware results** — every prediction carries a 0–1 confidence score that drives the UI language (high / moderate / low)
+- **Fail-closed plant gate** — a CLIP zero-shot check runs before the classifier; non-plant images are rejected as `not_crop` and never diagnosed
+- **Confidence-aware results** — every prediction carries a 0–1 confidence score that drives the UI language (high / moderate / low), and the API distinguishes **accepted**, **uncertain**, and **model_not_ready** states
 
 ### Farmer guidance
 - Plain-language result: what was seen, how sure the system is, what it means, what to do next
@@ -197,9 +231,16 @@ flowchart TD
     Farmer[Farmer] --> FE[Next.js frontend<br/>React · TypeScript · Tailwind]
     FE --> DS[Diagnosis Service boundary]
     DS --> API[FastAPI<br/>POST /predict]
-    API --> MS[Model Service]
-    MS --> Model[EfficientNet-B0<br/>38 classes]
-    Model --> Out[Prediction + confidence]
+    API --> ExtCheck[Extension + image validation]
+    ExtCheck --> Gate{Plant gate<br/>CLIP · fail-closed}
+    Gate -->|Non-plant| Rejected[rejected / not_crop]
+    Gate -->|Plant| Model[EfficientNet-B0<br/>38 classes]
+    Model --> Accept{Confidence + gap check}
+    Accept -->|High| Accepted[accepted]
+    Accept -->|Low / close| Uncertain[uncertain]
+    Accepted --> Out[Farmer-friendly result]
+    Uncertain --> Out
+    Rejected --> Out
     Out --> DB[(SQLite<br/>prediction history)]
     Out --> DS2[Normalized result]
     DS2 --> FE
@@ -207,8 +248,9 @@ flowchart TD
 
 - **Frontend** owns capture, display, and guidance — never model logic.
 - **Diagnosis Service** is the single abstraction the UI talks to; the real HTTP client lives behind it.
-- **Backend API** owns upload validation, orchestration, persistence, and the `/predict` contract.
-- **Model** owns pixels → prediction + confidence, returning a confidence value with every result.
+- **Backend API** owns upload validation, image-type checking, and the `/predict` contract.
+- **Plant gate** (CLIP, fail-closed) runs **before** the classifier; non-plant images are rejected without reaching the disease model.
+- **Model** owns pixels → prediction + confidence, returning one of three decision states: **accepted** (high confidence + clear gap), **uncertain** (low confidence or close second-best), or **model_not_ready** (no checkpoint present).
 
 ---
 
@@ -219,19 +261,22 @@ flowchart TD
 | Model              | EfficientNet-B0 (`model/architectures/classifier.py`)           |
 | Framework          | PyTorch                                                         |
 | Classes            | 38 crop/disease classes (`model/labels/classes.json`)           |
-| Dataset family     | PlantVillage, color subset (`scripts/download_plantvillage.py`) |
+| Dataset            | PlantVillage (`mohanty/PlantVillage` on Hugging Face), color subset; downloaded via `scripts/download_plantvillage.py` |
+| Dataset license    | CC0 1.0 Universal (public domain) — original PlantVillage release |
 | Input size         | 224×224                                                         |
 | Normalization      | ImageNet mean/std                                               |
 | Train / eval / predict | `model/train.py` · `model/evaluate.py` · `model/predict.py` |
 
-**Evaluation (reproduced baseline).** The validation numbers are reproduced from the repository itself and verified against the shipped checkpoint:
+**Evaluation (reproduced from this repository).** The validation numbers are reproduced from the repository itself and verified against the shipped checkpoint:
 
 | Metric (validation split) | Value |
 | ------------------------- | ----- |
 | Accuracy                  | **0.9971** (10,829 / 10,861) |
 | Macro-F1                  | **0.9961** |
 
-These are **PlantVillage validation-split** results (stratified 80/20, seed 42) reproduced by `model/evaluate.py` — **not** an official held-out field score, which has not been measured yet. Full per-class scores, the confusion matrix, and robustness/shortcut diagnostics live in the [one-page model report](#model-report).
+These are **PlantVillage validation-split** results (stratified 80/20, seed 42) reproduced by `model/evaluate.py` — **not** an official held-out field score, which has not been measured yet. Full per-class precision/recall/F1 for all 38 classes, the 38×38 confusion matrix, and robustness/shortcut diagnostics live in the [model report](report/model_report.md) and the per-class CSV [`report/per_class_metrics.csv`](report/per_class_metrics.csv). Weakest classes: Corn Cercospora (F1 0.967), Corn Northern_Leaf_Blight (0.980), Tomato Early_blight (0.980).
+
+> **Organizer baseline:** not available in the locally provided materials — no external baseline comparison is included.
 
 > Trained weights (`*.pth` / `model/checkpoints/`) are deliberately **not committed** and are distributed as a GitHub Release. `/predict` loads the first available checkpoint under `model/checkpoints/` — `generalized_model.pth`, falling back to `best_model.pth`. If neither is present it honestly returns `model_not_ready` instead of pretending to classify. Get the weights with `python scripts/download_model.py` (SHA-256 verified).
 
@@ -240,6 +285,17 @@ These are **PlantVillage validation-split** results (stratified 80/20, seed 42) 
 ## Model report
 
 A single-page, source-verified summary of the shipped model — architecture, dataset, split, validation metrics, per-class scores, confusion matrix, robustness and shortcut diagnostics, checkpoint metadata, and reproducibility commands — lives at **[`report/model_report.md`](report/model_report.md)**. Every number in it is reproduced from this repository (see the sources listed at its foot).
+
+---
+
+## Demo & deployment
+
+There is **no hosted public demo or deployed app** at this time. The model weights and the evaluation evidence are shipped in this repository, and the full system runs locally:
+
+- **Run it yourself:** follow [Installation](#installation) + [Usage](#usage) — frontend on `http://localhost:3000`, backend on `http://localhost:8000`.
+- **Real predictions, not mockups:** the screens and workflows shown in this README come from the running build against the real released checkpoint.
+
+A hosted demo/deployment will be published from this repository when available; until then nothing is linked that does not exist.
 
 ---
 
@@ -262,16 +318,33 @@ curl -X POST http://localhost:8000/predict \
   -F "file=@leaf.jpg"
 ```
 
-**Example success response:**
+**Response states** — `/predict` returns one of:
+
+| `status`                | Meaning                                                        |
+| ----------------------- | -------------------------------------------------------------- |
+| `success`               | Plant image analyzed; `prediction_status` is `accepted` or `uncertain` |
+| `rejected`              | Stopped before classification — `reason: not_crop` (plant gate), or a validation failure (bad format / too small / too dark or bright) |
+| `validation_service_unavailable` | Plant gate unavailable — fail-closed, refuses to diagnose |
+| `model_not_ready`       | No checkpoint loaded — cannot diagnose honestly                 |
+| `400` / `500` (HTTP)    | Unsupported extension, unreadable image, or processing failure  |
+
+**Example `success` response** (structure matches real verifiable output):
 
 ```json
 {
   "status": "success",
+  "prediction_status": "accepted",
+  "validation_message": "The model produced a sufficiently decisive prediction.",
   "class": "Tomato___Early_blight",
   "crop": "Tomato",
   "disease": "Early_blight",
   "confidence": 0.9998,
-  "confidence_percent": 99.98
+  "confidence_percent": 99.98,
+  "prediction_gap": 0.9963,
+  "prediction_gap_percent": 99.63,
+  "top_predictions": [
+    {"class": "Tomato___Early_blight", "confidence": 0.9998, "confidence_percent": 99.98}
+  ]
 }
 ```
 
@@ -388,16 +461,29 @@ curl -s -X POST http://localhost:8000/predict -F "file=@leaf.jpg"
 
 ---
 
+## Safety & validation behavior
+
+The system is designed to fail **closed**, not to guess:
+
+1. **Plant gate runs first and is fail-closed** — a CLIP zero-shot plant check (`model/plant_gate.py`, `openai/clip-vit-base-patch32`) evaluates every image before any disease classification. Non-plant images (pets, hands, documents, scenery) are returned as `rejected / not_crop` and **never reach** the 38-class model. If the gate itself fails, the app refuses to diagnose rather than pass the image through.
+2. **No checkpoint, no fake diagnosis** — if no trained weights are present, `/predict` returns `model_not_ready` explicitly.
+3. **Honest uncertainty** — predictions are classified as **accepted** (high confidence with a clear gap to the second-best class) or **uncertain** (low confidence or a close call); the UI labels them accordingly and suggests a clearer photo.
+4. **No safety-critical advice** — output is decision support in plain language. The app never issues pesticide names, dosages, or treatment claims.
+5. **No invented quality checks** — blur/light/framing are not claimed as automatic detections; poor photos are handled by guided recapture and honest framing.
+
+---
+
 ## Reliability & edge cases
 
 | Situation                    | Implemented behavior                                                  |
 | ---------------------------- | -------------------------------------------------------------------- |
+| Non-plant image              | Plant gate rejects it → `rejected / not_crop`; never reaches the 38-class model |
 | Unsupported file type        | Blocked client-side before upload; backend returns `400` if it slips through |
 | Unreadable / corrupt image   | Backend returns `400` "not a valid image"                            |
 | Model unavailable            | `/predict` returns `model_not_ready` → UI shows a clear "try again" state |
 | Failed analysis (5xx / network) | Degrades to the analysis-failed recovery screen — never a dead end   |
-| Uncertain prediction         | Result is labelled by confidence; low confidence suggests a clearer photo |
-| Out-of-vocabulary crops      | Predictions are limited to the 38 trained classes; results outside production confidence are flagged honestly |
+| Uncertain prediction         | Labelled **uncertain**; low confidence or close second → suggest a clearer photo |
+| Out-of-vocabulary crops      | Predictions are limited to the 38 trained classes; non-plant images are rejected by the gate before classification |
 
 No automatic blur/lighting detection is claimed — a poor photo is handled through guided recapture and honestly framed results, not through a pretend quality classifier.
 
