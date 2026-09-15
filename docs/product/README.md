@@ -28,7 +28,7 @@ flowchart TD
 ## Core experience
 
 - Photograph or upload a crop/leaf image.
-- Immediate feedback on photo quality (blur, light, framing) with guidance to retake.
+- Client-side validation of format and size, plus honest guidance (framing, light, focus) toward a better photo — no automatic blur detection is claimed.
 - A result stated plainly: what was seen, how confident the system is, what it means.
 - One or two practical next steps, plus when to ask an agronomist.
 - AgriBot, a contextual assistant, explains results and helps recover from errors — it guides, it never diagnoses on its own.

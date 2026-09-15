@@ -29,8 +29,9 @@ flowchart TD
 
 ## Status
 
-- **Current:** Layer boundaries and contracts defined on paper.
-- **Planned:** App experience, backend API, training/inference pipeline.
+- **Current:** Farmer experience (`frontend/`), backend API (`app/backend/`), and the training/inference pipeline (`model/`) are implemented and wired end to end.
 - **Future:** Weather, irrigation, sustainability, and IoT integrations (see the main README roadmap).
+
+For implemented details see `app/backend/main.py`, the `frontend/` journey, and `model/`.
 
 Further reading: [Product concept](../product/) · [Repository structure](../../README.md#repository-structure)

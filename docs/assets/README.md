@@ -1,6 +1,8 @@
 # Assets
 
-Future home of visual material. This folder is intentionally empty — no placeholder images are committed.
+## Documentation assets
+
+Committed images in this folder: `hero.png`, `ins.png`, `helper_bot.png`, `confusion_matrix.png`.
 
 ## Planned layout
 

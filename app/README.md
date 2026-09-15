@@ -15,4 +15,4 @@ Future home of everything the farmer touches: image capture, quality feedback, r
 - No training code, no model weights, no inference logic.
 - No hard-coded diagnosis content — all results arrive via the backend contract.
 
-> Status: **Planned.** This directory currently holds no implementation.
+> Status: **Current.** The backend (`app/backend/`) implements the FastAPI API — `/predict`, `/health`, `/history` — including upload validation, inference orchestration, and SQLite history. The farmer-facing UI lives in `frontend/`.

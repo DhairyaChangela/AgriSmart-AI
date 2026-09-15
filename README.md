@@ -20,7 +20,7 @@
 
 <img src="docs/assets/hero.png" alt="AgriSmart AI" width="720">
 
-[Why](#why-agrismart-ai) · [How it works](#how-it-works) · [Features](#key-features) · [Capture](#-capture-the-right-photo) · [Farmer experience](#farmer-experience) · [AgriBot](#-agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
+[Why](#why-agrismart-ai) · [How it works](#how-it-works) · [Features](#key-features) · [Capture](#-capture-the-right-photo) · [Farmer experience](#farmer-experience) · [AgriBot](#-agribot) · [Architecture](#architecture) · [Machine learning](#machine-learning) · [Model report](#model-report) · [API](#api) · [Installation](#installation) · [Repository](#repository-structure) · [Status & Roadmap](#project-status--roadmap) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
@@ -219,14 +219,27 @@ flowchart TD
 | Model              | EfficientNet-B0 (`model/architectures/classifier.py`)           |
 | Framework          | PyTorch                                                         |
 | Classes            | 38 crop/disease classes (`model/labels/classes.json`)           |
-| Dataset family     | PlantVillage-style                                              |
+| Dataset family     | PlantVillage, color subset (`scripts/download_plantvillage.py`) |
 | Input size         | 224×224                                                         |
 | Normalization      | ImageNet mean/std                                               |
 | Train / eval / predict | `model/train.py` · `model/evaluate.py` · `model/predict.py` |
 
-**Evaluation honesty.** The repository does **not** publish accuracy, F1, or benchmark numbers — none are claimed anywhere. Final results will be produced only against the **organizer-provided held-out test set**, reporting accuracy, macro F1, per-class performance, out-of-distribution behavior, and reproducibility.
+**Evaluation (reproduced baseline).** The validation numbers are reproduced from the repository itself and verified against the shipped checkpoint:
 
-> Trained weights (`*.pth` / `model/checkpoints/`) are deliberately **not committed**. `/predict` loads the first available checkpoint under `model/checkpoints/` — `generalized_model.pth`, falling back to `best_model.pth`. If neither is present it honestly returns `model_not_ready` instead of pretending to classify.
+| Metric (validation split) | Value |
+| ------------------------- | ----- |
+| Accuracy                  | **0.9971** (10,829 / 10,861) |
+| Macro-F1                  | **0.9961** |
+
+These are **PlantVillage validation-split** results (stratified 80/20, seed 42) reproduced by `model/evaluate.py` — **not** an official held-out field score, which has not been measured yet. Full per-class scores, the confusion matrix, and robustness/shortcut diagnostics live in the [one-page model report](#model-report).
+
+> Trained weights (`*.pth` / `model/checkpoints/`) are deliberately **not committed** and are distributed as a GitHub Release. `/predict` loads the first available checkpoint under `model/checkpoints/` — `generalized_model.pth`, falling back to `best_model.pth`. If neither is present it honestly returns `model_not_ready` instead of pretending to classify. Get the weights with `python scripts/download_model.py` (SHA-256 verified).
+
+---
+
+## Model report
+
+A single-page, source-verified summary of the shipped model — architecture, dataset, split, validation metrics, per-class scores, confusion matrix, robustness and shortcut diagnostics, checkpoint metadata, and reproducibility commands — lives at **[`docs/model_report.md`](docs/model_report.md)**. Every number in it is reproduced from this repository (see the sources listed at its foot).
 
 ---
 
@@ -291,8 +304,8 @@ AgriSmart-AI/
 ├── frontend/           # Next.js + React + TypeScript + Tailwind journey
 ├── model/              # EfficientNet-B0: architecture, train, predict, evaluate, preprocessing, classes
 ├── data/               # Dataset layout & metadata (large data never committed)
-├── docs/               # Architecture + product docs
-├── scripts/            # Tooling (e.g. dataset download)
+├── docs/               # Architecture + product docs + one-page model report
+├── scripts/            # Tooling: model download, dataset download
 ├── tests/              # Future home of automated checks
 ├── .github/            # Community health files
 ├── .env.example        # Environment template (backend + frontend base URLs)
@@ -318,6 +331,12 @@ python -m venv .venv
 # Windows: .venv\Scripts\Activate.ps1  ·  macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+```
+
+**Model weights** (optional but needed for real inference; SHA-256 verified):
+
+```bash
+python scripts/download_model.py     # writes model/checkpoints/best_model.pth
 ```
 
 **Frontend:**
@@ -387,9 +406,9 @@ No automatic blur/lighting detection is claimed — a poor photo is handled thro
 
 This project deliberately refuses to fabricate numbers:
 
-- No self-reported accuracy, F1, or latency benchmarks are asserted.
-- Robustness cannot be proven from a curated demo set.
-- Final results will be produced only against the **official held-out test set**, reporting:
+- Published numbers are **reproduced from this repository** (see the [model report](#model-report)) — they are validation-split results, identified exactly as what they are, and never presented as field or held-out performance.
+- Robustness and shortcut diagnostics come from measured scripts in `results/` (locally reproducible), not from a curated demo set.
+- An **official held-out set result** will be reported only against the organizer-provided test set, reporting:
   - overall accuracy and **macro F1**,
   - **per-class** performance,
   - **out-of-distribution** behavior and failure modes,
@@ -407,8 +426,9 @@ Until then, every screen the farmer sees behaves as a responsible product should
 | Backend API                 | Live — `/predict`, `/health`, `/history`, SQLite history   |
 | Frontend ↔ API integration  | Live — verified end-to-end against real `/predict`         |
 | ML model code               | Live — EfficientNet-B0 38-class train/predict/evaluate     |
-| Live inference              | Requires a trained checkpoint (`model/checkpoints/`) — `model_not_ready` until provided |
-| Evaluation                  | Pending — held-out set, official protocol                  |
+| Model report                | Live — one-page [model report](docs/model_report.md) with reproduced metrics |
+| Live inference              | Requires the released checkpoint (`python scripts/download_model.py`) — `model_not_ready` until present |
+| Evaluation                  | Validation baseline reproduced (acc 0.9971 / Macro-F1 0.9961); official held-out set pending |
 | Out-of-distribution claims  | Not claimed                                                |
 | Automated tests             | Planned — `tests/` is their future home                    |
 
