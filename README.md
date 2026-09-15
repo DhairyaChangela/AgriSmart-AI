@@ -6,6 +6,8 @@
 
 *A farmer-first computer-vision system.*
 
+> 📄 **[One-Page Model Report](report/model_report.md)** — one page, source-verified: 38-class EfficientNet-B0, PlantVillage validation, per-class scores, confusion matrix, robustness diagnostics.
+
 [![Release](https://img.shields.io/github/v/release/DhairyaChangela/AgriSmart-AI?style=flat-square&color=blue&label=Release&logo=github)](https://github.com/DhairyaChangela/AgriSmart-AI/releases)
 [![License](https://img.shields.io/github/license/DhairyaChangela/AgriSmart-AI?style=flat-square&color=green&label=License)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](requirements.txt)
@@ -271,10 +273,20 @@ flowchart TD
 
 | Metric (validation split) | Value |
 | ------------------------- | ----- |
-| Accuracy                  | **0.9971** (10,829 / 10,861) |
-| Macro-F1                  | **0.9961** |
+| Accuracy                  | **99.71%** (10,829 / 10,861) |
+| Macro-F1                  | **99.61%** |
 
-These are **PlantVillage validation-split** results (stratified 80/20, seed 42) reproduced by `model/evaluate.py` — **not** an official held-out field score, which has not been measured yet. Full per-class precision/recall/F1 for all 38 classes, the 38×38 confusion matrix, and robustness/shortcut diagnostics live in the [model report](report/model_report.md) and the per-class CSV [`report/per_class_metrics.csv`](report/per_class_metrics.csv). Weakest classes: Corn Cercospora (F1 0.967), Corn Northern_Leaf_Blight (0.980), Tomato Early_blight (0.980).
+These are **PlantVillage validation-split** results (stratified 80/20, seed 42) reproduced by `model/evaluate.py` — **not** an official held-out field score, which has not been measured yet. Full per-class precision/recall/F1 for all 38 classes, the 38×38 confusion matrix, and robustness/shortcut diagnostics live in the [model report](report/model_report.md) and the per-class CSV [`report/per_class_metrics.csv`](report/per_class_metrics.csv).
+
+### Model evidence (linked, source-verified)
+
+| Evidence | File | Reproduces |
+|---|---|---|
+| **One-page model report** (task, dataset & split, model, Macro-F1, accuracy, per-class, baseline honesty, limitations) | [`report/model_report.md`](report/model_report.md) | In-line table below |
+| **Confusion matrix** (38×38) | [`report/confusion_matrix.png`](report/confusion_matrix.png) | Macro-F1 0.9961 |
+| **Per-class metrics** (precision/recall/F1, all 38 classes) | [`report/per_class_metrics.csv`](report/per_class_metrics.csv) | Macro-F1 (macro-average) = 0.996055 → 99.61% |
+
+Weakest classes: Corn Cercospora (F1 0.967), Corn Northern_Leaf_Blight (0.980), Tomato Early_blight (0.980).
 
 > **Organizer baseline:** not available in the locally provided materials — no external baseline comparison is included.
 
