@@ -14,7 +14,7 @@ Identify crop/leaf disease from a photo and present it as **condition → confid
 
 ## Dataset
 
-- **Source:** PlantVillage — `mohanty/PlantVillage` (see `scripts/download_plantvillage.py`), color subset.
+- **Source:** PlantVillage — `mohanty/PlantVillage` (see `scripts/download_plantvillage.py`), color subset. CC BY-SA 3.0 per the Hugging Face dataset card.
 - **Classes:** 38 crop/disease classes (`model/labels/classes.json`).
 - **Size (verified):** 54,305 color images in the training set (54,284 unique + 21 duplicate halves), 256×256 JPG/JPEG/PNG; 0 corrupt in inventory manifest.
 - **Split:** stratified 80/20 train/validation, seed 42 → **43,444 train / 10,861 validation**.

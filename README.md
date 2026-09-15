@@ -262,7 +262,7 @@ flowchart TD
 | Framework          | PyTorch                                                         |
 | Classes            | 38 crop/disease classes (`model/labels/classes.json`)           |
 | Dataset            | PlantVillage (`mohanty/PlantVillage` on Hugging Face), color subset; downloaded via `scripts/download_plantvillage.py` |
-| Dataset license    | CC0 1.0 Universal (public domain) — original PlantVillage release |
+| Dataset license    | CC BY-SA 3.0 (per the Hugging Face dataset card) — used for research and education |
 | Input size         | 224×224                                                         |
 | Normalization      | ImageNet mean/std                                               |
 | Train / eval / predict | `model/train.py` · `model/evaluate.py` · `model/predict.py` |
@@ -522,6 +522,26 @@ Until then, every screen the farmer sees behaves as a responsible product should
 **Current priority.** The core disease-detection product: a reliable, honest pipeline from photo to actionable guidance.
 
 **Looking ahead.** Weather and irrigation advisory, sustainability signals, multilingual guidance, expert escalation, and broader crop-health intelligence built on the same reliable base.
+
+---
+
+## Originality & attribution
+
+This project is the team's own **original implementation**: the farmer-facing product experience, the diagnosis service integration, the plant-gate system design, the confidence-aware decision states, and the deployment workflow were built specifically for this submission and are not copies of an existing open-source product.
+
+It builds on openly published research and libraries, attributed here:
+
+| Resource | Use in this project | Attribution / license |
+|----------|--------------------|-----------------------|
+| PlantVillage dataset | Training and validation images (color subset) | Mohanty, Hughes & Salathe (2016), *Using Deep Learning for Image-Based Plant Disease Detection*, PLOS ONE. Dataset: `mohanty/PlantVillage` on Hugging Face, used under CC BY-SA 3.0 (per the dataset card) |
+| EfficientNet-B0 | Feature backbone of the classifier | Tan & Le (2019), *EfficientNet: Rethinking Model Scaling for CNNs*; torchvision ImageNet-pretrained weights (BSD-3-Clause) |
+| CLIP (ViT-B/32) | Zero-shot plant/non-plant safety gate | Radford et al. (2021), *Learning Transferable Visual Models From Natural Language Supervision*; weights via `openai/clip-vit-base-patch32` on Hugging Face (MIT) |
+| PyTorch / torchvision | Training, inference, transforms | BSD-style license |
+| FastAPI + uvicorn | Prediction API and server | MIT |
+| Next.js + React + TypeScript + Tailwind CSS | Frontend application | MIT |
+| Hugging Face `datasets` / `transformers` / `huggingface_hub` | Dataset loading, CLIP, checkpoint distribution | Apache-2.0 |
+
+All dependencies used here are pinned in [`requirements.txt`](requirements.txt); the repository code itself is released under the MIT License (see [LICENSE](LICENSE)).
 
 ---
 
